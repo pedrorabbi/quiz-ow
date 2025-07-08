@@ -1,0 +1,130 @@
+h1 {
+  font-size: 24px;
+  margin: 10px 0 20px 0;
+}
+
+.floating-label-group {
+  position: relative;
+  /* margin-top: 10px; */
+}
+
+.floating-label-group input {
+  width: 100%;
+  padding: 10px 10px 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.floating-label-group label {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  padding: 0 5px;
+  transition: 0.2s ease all;
+  color: #999;
+  pointer-events: none;
+  font-size: 14px;
+}
+
+.floating-label-group input:focus + label,
+.floating-label-group input:not(:placeholder-shown) + label {
+  top: 0px;
+  left: 10px;
+  font-size: 12px;
+  color: #555;
+}
+* {
+  font-family: sans-serif;
+}
+
+input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+input[type="color"] {
+  padding: 0;
+  border-radius: 0;
+  border: none;
+}
+
+.colorRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.colorRow label {
+  flex: 1;
+  /* font-weight: bold; */
+}
+
+.colorInputWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+hr {
+  width: 100%;
+  border-top: 1px solid lightgrey;
+  border-bottom: 0;
+}
+
+/* Aplica margin-top: 10px ao grupo quando o input está focado ou preenchido */
+.floating-label-group:has(input:focus),
+.floating-label-group:has(input:not(:placeholder-shown)) {
+  margin-top: 10px;
+}
+
+button {
+  padding: 10px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: filter 0.15s;
+  flex: 1;
+}
+
+button[onclick="addQuestion()"] {
+  background-color: #2563eb;
+}
+
+button[onclick="createHtmlTemplate()"] {
+  background-color: #1baa50;
+}
+
+button[onclick^="addOption"] {
+  background-color: #d9d9d9;
+  border: 1px solid #ccc;
+  color: black;
+}
+
+button:hover {
+  filter: brightness(0.92);
+}
+
+.question-block {
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: #f4f4f4;
+}
+.options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+* {
+  transition: all 0.2s ease;
+}

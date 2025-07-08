@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Quiz Offer Wall</title>
+
+    <link rel="stylesheet" href="./style.css" />
+    <script src="./script.js"></script>
+  </head>
+  <body style="max-width: 500px; margin: 0 auto; padding: 10px">
+    <h1>Criação de Quiz com Offer Wall</h1>
+
+    <!-- Container principal do formulário do quiz -->
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <!-- Campo para nome do quiz -->
+      <div class="floating-label-group">
+        <input type="text" id="quizName" placeholder=" " />
+        <label for="quizName">Nome do Quiz</label>
+      </div>
+
+      <!-- Campo para vertical do quiz -->
+      <div class="floating-label-group">
+        <input type="text" id="vertical" placeholder=" " />
+        <label for="vertical">Vertical (Ex: ccd-emp-de-courier)</label>
+      </div>
+
+      <!-- Campo para domínio do quiz -->
+      <div class="floating-label-group">
+        <input type="text" id="domain" placeholder=" " />
+        <label for="domain">Domínio (Ex: https://cashcreditdigest.com)</label>
+      </div>
+
+      <hr />
+
+      <!-- Campo para label do anúncio -->
+      <div class="floating-label-group">
+        <input type="text" id="adLabel" placeholder=" " />
+        <label for="adLabel">Ad Label</label>
+      </div>
+
+      <!-- Campo para título do quiz -->
+      <div class="floating-label-group">
+        <input type="text" id="title" placeholder=" " />
+        <label for="title">Título</label>
+      </div>
+
+      <!-- Campo para subtítulo/greeting do quiz -->
+      <div class="floating-label-group">
+        <input type="text" id="greeting" placeholder=" " />
+        <label for="greeting">Subtítulo/Greeting</label>
+      </div>
+
+      <!-- Campo para descrição do quiz -->
+      <div class="floating-label-group">
+        <input type="text" id="description" placeholder=" " />
+        <label for="description">Descrição</label>
+      </div>
+
+      <!-- Campo para label do nome -->
+      <div class="floating-label-group">
+        <input type="text" id="nameLabel" placeholder=" " />
+        <label for="nameLabel">Label Nome</label>
+      </div>
+
+      <!-- Campo para label do email -->
+      <div class="floating-label-group">
+        <input type="text" id="emailLabel" placeholder=" " />
+        <label for="emailLabel">Label Email</label>
+      </div>
+
+      <!-- Campo para texto do botão -->
+      <div class="floating-label-group">
+        <input type="text" id="buttonText" placeholder=" " />
+        <label for="buttonText">Texto do botão</label>
+      </div>
+
+      <!-- Campo para rodapé -->
+      <div class="floating-label-group">
+        <input type="text" id="footnote" placeholder=" " />
+        <label for="footnote">Rodapé</label>
+      </div>
+
+      <hr />
+
+      <!-- Seletores de cor para personalização do quiz -->
+      <div class="colorRow">
+        <label for="primaryColor">Cor Primária:</label>
+        <div class="colorInputWrapper">
+          <input type="color" id="primaryColor" value="#22C55D" />
+        </div>
+      </div>
+
+      <div class="colorRow">
+        <label for="secondaryColor">Cor Secundária:</label>
+        <div class="colorInputWrapper">
+          <input type="color" id="secondaryColor" value="#16A349" />
+        </div>
+      </div>
+
+      <div class="colorRow">
+        <label for="hoverColor">Cor de Hover:</label>
+        <div class="colorInputWrapper">
+          <input type="color" id="hoverColor" value="#16A349" />
+        </div>
+      </div>
+
+      <!-- Container onde as perguntas do quiz serão adicionadas dinamicamente -->
+      <div
+        id="questionsContainer"
+        style="display: flex; flex-direction: column; gap: 20px"
+      >
+        <!-- Perguntas serão adicionadas aqui -->
+      </div>
+
+      <!-- Botões para adicionar perguntas e criar o quiz -->
+      <div style="display: flex; gap: 10px">
+        <button onclick="addQuestion()">Adicionar Pergunta</button>
+        <button onclick="createHtmlTemplate()">Criar Quiz</button>
+      </div>
+    </div>
+
+    <!-- Área para exibir resposta da API após submissão -->
+    <div
+      id="apiResponse"
+      style="display: flex; justify-content: center; margin-top: 10px"
+    ></div>
+
+    <!-- Área para exibir link gerado após criação do template -->
+    <div
+      id="linkResponse"
+      style="
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin-top: 10px;
+        text-align: center;
+      "
+    ></div>
+  </body>
+</html>
