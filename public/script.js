@@ -442,9 +442,18 @@ function updatePreview() {
     const previewButton = document.getElementById("previewButton");
     const previewFootnote = document.getElementById("previewFootnote");
 
-    if (previewAdLabel) previewAdLabel.textContent = adLabel;
-    if (previewTitle) previewTitle.textContent = title;
-    if (previewGreeting) previewGreeting.textContent = greeting;
+    if (previewAdLabel) {
+      previewAdLabel.textContent = adLabel;
+      previewAdLabel.style.display = "none";
+    }
+    if (previewTitle) {
+      previewTitle.textContent = title;
+      previewTitle.style.display = "none";
+    }
+    if (previewGreeting) {
+      previewGreeting.textContent = greeting;
+      previewGreeting.style.display = "none";
+    }
     if (previewDescription) previewDescription.textContent = description;
     if (previewButton) {
       previewButton.textContent = buttonText;
