@@ -488,6 +488,19 @@ function updatePreview(showTitleInForm = null) {
     // Atualizar perguntas apenas se não estivermos no formulário final
     const previewForm = document.getElementById("previewForm");
     const isShowingForm = previewForm && previewForm.style.display === "block";
+    const previewContent = document.getElementById("previewContent");
+    
+    // Ajustar padding baseado no estado
+    if (previewContent) {
+      if (isShowingForm) {
+        // Formulário: manter padding normal
+        previewContent.style.padding = "20px";
+      } else {
+        // Perguntas: remover padding vertical
+        previewContent.style.padding = "0 20px";
+      }
+    }
+    
     if (!isShowingForm) {
       updatePreviewQuestions();
     }
