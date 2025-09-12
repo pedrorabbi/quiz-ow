@@ -9,26 +9,48 @@ async function createHtmlTemplate() {
   const adLabel = document.getElementById("adLabel").value;
   const title = document.getElementById("title").value;
   const description = document.getElementById("description").value;
-  const nameLabel = document.getElementById("nameLabel").value;
-  const emailLabel = document.getElementById("emailLabel").value;
   const buttonText = document.getElementById("buttonText").value;
   const footnote = document.getElementById("footnote").value;
   const greeting = document.getElementById("greeting").value;
 
-  // Coleta as perguntas e opções adicionadas dinamicamente no formulário
-  const questions = [];
-  const questionBlocks = document.querySelectorAll(".question-block");
+  // Verificar se é com retenção para incluir name/email labels
+  const withRetention = document.getElementById("withRetention").checked;
+  const nameLabel = withRetention
+    ? document.getElementById("nameLabel").value
+    : "";
+  const emailLabel = withRetention
+    ? document.getElementById("emailLabel").value
+    : "";
 
-  questionBlocks.forEach((block) => {
-    const questionText = block.querySelector(".question-input").value;
-    const optionInputs = block.querySelectorAll(".option-input");
-    const options = Array.from(optionInputs)
-      .map((input) => input.value)
-      .filter(Boolean); // Remove opções vazias
-    if (questionText && options.length) {
-      questions.push({ question: questionText, options });
+  // Coleta as perguntas, loaders e opções adicionadas dinamicamente no formulário
+  const items = [];
+  const allBlocks = Array.from(document.querySelectorAll(".question-block, .loader-block"));
+
+  allBlocks.forEach((block) => {
+    if (block.classList.contains("question-block")) {
+      // É uma pergunta
+      const questionText = block.querySelector(".question-input").value;
+      const optionInputs = block.querySelectorAll(".option-input");
+      const options = Array.from(optionInputs)
+        .map((input) => input.value.trim())
+        .filter((option) => option !== ""); // Remove opções vazias
+      if (questionText && options.length) {
+        items.push({ type: "question", question: questionText, options });
+      }
+    } else if (block.classList.contains("loader-block")) {
+      // É um loader
+      const loaderText = block.querySelector(".loader-input").value.trim();
+      if (loaderText) {
+        items.push({ type: "loader", text: loaderText });
+      }
     }
   });
+
+  // Separar perguntas dos loaders para compatibilidade com a API atual
+  const questions = items.filter(item => item.type === "question").map(item => ({
+    question: item.question,
+    options: item.options
+  }));
 
   // Montagem do corpo do request para a API que gera o template HTML
   const htmlTemplate = await fetch("/proxy/template", {
@@ -58,6 +80,7 @@ async function createHtmlTemplate() {
         greeting: greeting,
       },
       questions: questions,
+      loaders: items.filter(item => item.type === "loader"),
     }),
   })
     .then(async (res) => {
@@ -217,15 +240,74 @@ function setupDragAndDrop(questionElement) {
   });
 }
 
-// Função para renumerar as perguntas após reordenação
+// Função para renumerar as perguntas e loaders após reordenação
 function renumberQuestions() {
   const questionBlocks = document.querySelectorAll(".question-block");
-  questionBlocks.forEach((block, index) => {
+  const loaderBlocks = document.querySelectorAll(".loader-block");
+  
+  let questionIndex = 1;
+  let loaderIndex = 1;
+  
+  // Renumerar perguntas
+  questionBlocks.forEach((block) => {
     const questionNumber = block.querySelector(".question-number");
     if (questionNumber) {
-      questionNumber.textContent = `Pergunta ${index + 1}`;
+      questionNumber.textContent = `Pergunta ${questionIndex}`;
+      questionIndex++;
     }
   });
+  
+  // Renumerar loaders
+  loaderBlocks.forEach((block) => {
+    const loaderLabel = block.querySelector(".loader-label");
+    if (loaderLabel) {
+      loaderLabel.textContent = `Loader ${loaderIndex}`;
+      loaderIndex++;
+    }
+  });
+}
+
+// Função auxiliar para adicionar um loader ao formulário
+function addLoader() {
+  const container = document.getElementById("questionsContainer");
+  const index = container.children.length;
+
+  // Cria um novo bloco de loader
+  const loaderDiv = document.createElement("div");
+  loaderDiv.classList.add("loader-block");
+  loaderDiv.draggable = true;
+  loaderDiv.innerHTML = `
+          <div class="drag-handle">≡≡</div>
+          <div class="loader-label">Loader ${index + 1}</div>
+          <div class="floating-label-group">
+            <input type="text" placeholder=" " class="loader-input" />
+            <label>Texto do loader</label>
+          </div>
+        `;
+  container.appendChild(loaderDiv);
+
+  // Adicionar event listener ao novo input
+  const input = loaderDiv.querySelector("input");
+  input.addEventListener("input", () => {
+    resetPreview();
+    updatePreview();
+  });
+
+  // Adicionar eventos de drag and drop
+  setupDragAndDrop(loaderDiv);
+
+  // Reconfigurar eventos após adicionar novo loader
+  setTimeout(() => {
+    const loaderInput = loaderDiv.querySelector("input");
+    loaderInput.removeEventListener("input", updatePreview);
+    loaderInput.addEventListener("input", () => {
+      resetPreview();
+      updatePreview();
+    });
+  }, 10);
+
+  resetPreview();
+  updatePreview();
 }
 
 // Função auxiliar para adicionar uma nova pergunta ao formulário
@@ -384,13 +466,13 @@ function updatePreviewQuestions() {
     const questionsContainer = document.getElementById("previewQuestions");
     if (!questionsContainer) return;
 
-    const questionBlocks = document.querySelectorAll(".question-block");
+    const allBlocks = Array.from(document.querySelectorAll(".question-block, .loader-block"));
 
-    // Limpar perguntas existentes no preview
+    // Limpar conteúdo existente no preview
     questionsContainer.innerHTML = "";
 
-    if (questionBlocks.length === 0) {
-      // Mostrar pergunta de exemplo se não houver perguntas
+    if (allBlocks.length === 0) {
+      // Mostrar pergunta de exemplo se não houver nada
       const questionDiv = createPreviewQuestion(
         "Pergunta de exemplo",
         ["Opção 1", "Opção 2"],
@@ -399,34 +481,47 @@ function updatePreviewQuestions() {
       );
       questionsContainer.appendChild(questionDiv);
     } else {
-      // Mostrar apenas a pergunta atual (step by step)
-      if (currentPreviewStep >= questionBlocks.length) {
+      // Mostrar apenas o step atual (pergunta ou loader)
+      if (currentPreviewStep >= allBlocks.length) {
         currentPreviewStep = 0;
       }
 
-      const currentBlock = questionBlocks[currentPreviewStep];
+      const currentBlock = allBlocks[currentPreviewStep];
       if (currentBlock) {
-        const questionInput = currentBlock.querySelector(".question-input");
-        const questionText =
-          questionInput?.value || `Pergunta ${currentPreviewStep + 1}`;
-        const optionInputs = currentBlock.querySelectorAll(".option-input");
+        if (currentBlock.classList.contains("question-block")) {
+          // É uma pergunta
+          const questionInput = currentBlock.querySelector(".question-input");
+          const questionText =
+            questionInput?.value || `Pergunta ${currentPreviewStep + 1}`;
+          const optionInputs = currentBlock.querySelectorAll(".option-input");
 
-        const options = Array.from(optionInputs)
-          .map((input, index) => input?.value?.trim() || `Opção ${index + 1}`)
-          .filter((text) => text.trim() !== "");
+          const options = Array.from(optionInputs)
+            .map((input, index) => ({ value: input?.value?.trim() || "", index: index + 1 }))
+            .filter((option) => option.value !== "")
+            .map((option) => option.value);
 
-        // Garantir pelo menos 2 opções
-        if (options.length < 2) {
-          options.push("Opção 1", "Opção 2");
+          // Garantir pelo menos 2 opções para o preview
+          const displayOptions = options.length > 0 ? options : ["Opção 1", "Opção 2"];
+
+          const questionDiv = createPreviewQuestion(
+            questionText,
+            displayOptions,
+            currentPreviewStep,
+            allBlocks.length
+          );
+          questionsContainer.appendChild(questionDiv);
+        } else if (currentBlock.classList.contains("loader-block")) {
+          // É um loader
+          const loaderInput = currentBlock.querySelector(".loader-input");
+          const loaderText = loaderInput?.value || "WIR SUCHEN DIE BESTEN KREDITOPTIONEN FÜR SIE ...";
+          
+          const loaderDiv = createPreviewLoader(
+            loaderText,
+            currentPreviewStep,
+            allBlocks.length
+          );
+          questionsContainer.appendChild(loaderDiv);
         }
-
-        const questionDiv = createPreviewQuestion(
-          questionText,
-          options,
-          currentPreviewStep,
-          questionBlocks.length
-        );
-        questionsContainer.appendChild(questionDiv);
       }
     }
 
@@ -510,6 +605,86 @@ function createPreviewQuestion(questionText, options, stepIndex, totalSteps) {
   return questionDiv;
 }
 
+// Função para criar um loader no preview
+function createPreviewLoader(loaderText, stepIndex, totalSteps) {
+  const loaderDiv = document.createElement("div");
+  loaderDiv.className = "preview-loader";
+  loaderDiv.style.cssText = "text-align: center; margin-bottom: 20px;";
+
+  // Indicador de progresso
+  if (totalSteps > 1) {
+    const progressDiv = document.createElement("div");
+    progressDiv.style.cssText =
+      "display: flex; gap: 4px; margin-bottom: 15px; justify-content: center;";
+
+    for (let i = 0; i < totalSteps; i++) {
+      const dot = document.createElement("div");
+      dot.style.cssText = `
+        width: 8px; 
+        height: 8px; 
+        border-radius: 50%; 
+        background-color: ${i <= stepIndex ? "#22C55D" : "#ddd"};
+        transition: background-color 0.3s ease;
+      `;
+      progressDiv.appendChild(dot);
+    }
+
+    loaderDiv.appendChild(progressDiv);
+  }
+
+  // Texto do loader
+  const loaderTextDiv = document.createElement("div");
+  loaderTextDiv.textContent = loaderText;
+  loaderTextDiv.style.cssText = `
+    font-size: 18px;
+    font-weight: bold;
+    color: #22C55D;
+    margin: 40px 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  `;
+
+  // Animação de loading (pontos)
+  const dotsDiv = document.createElement("div");
+  dotsDiv.style.cssText = `
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 20px 0;
+  `;
+
+  for (let i = 0; i < 3; i++) {
+    const dot = document.createElement("div");
+    dot.style.cssText = `
+      width: 12px;
+      height: 12px;
+      background-color: #22C55D;
+      border-radius: 50%;
+      animation: loadingDot 1.2s infinite ease-in-out;
+      animation-delay: ${i * 0.2}s;
+    `;
+    dotsDiv.appendChild(dot);
+  }
+
+  loaderDiv.appendChild(loaderTextDiv);
+  loaderDiv.appendChild(dotsDiv);
+
+  // Avançar automaticamente após 2 segundos
+  setTimeout(() => {
+    const allBlocks = Array.from(document.querySelectorAll(".question-block, .loader-block"));
+    if (currentPreviewStep < allBlocks.length - 1) {
+      currentPreviewStep++;
+      updatePreviewQuestions();
+    } else {
+      // Última step - mostrar formulário
+      document.getElementById("previewQuestions").style.display = "none";
+      document.getElementById("previewForm").style.display = "block";
+    }
+  }, 2000);
+
+  return loaderDiv;
+}
+
 // Função para resetar o preview para o primeiro step
 function resetPreview() {
   currentPreviewStep = 0;
@@ -546,6 +721,32 @@ function updatePreviewColors() {
   });
 }
 
+// Função para controlar exibição dos campos de retenção
+function toggleRetentionFields() {
+  const withRetention = document.getElementById("withRetention").checked;
+  const retentionFields = document.getElementById("retentionFields");
+  const previewNameContainer = document.getElementById(
+    "previewNameInputContainer"
+  );
+  const previewEmailContainer = document.getElementById(
+    "previewEmailInputContainer"
+  );
+
+  if (withRetention) {
+    retentionFields.style.display = "flex";
+    // Mostrar campos no preview
+    if (previewNameContainer) previewNameContainer.style.display = "flex";
+    if (previewEmailContainer) previewEmailContainer.style.display = "flex";
+  } else {
+    retentionFields.style.display = "none";
+    // Esconder campos no preview
+    if (previewNameContainer) previewNameContainer.style.display = "none";
+    if (previewEmailContainer) previewEmailContainer.style.display = "none";
+  }
+
+  updatePreview();
+}
+
 // Inicializar preview quando a página carregar
 document.addEventListener("DOMContentLoaded", function () {
   // Adicionar listeners apenas para inputs do formulário (não do preview)
@@ -556,13 +757,22 @@ document.addEventListener("DOMContentLoaded", function () {
     input.addEventListener("input", () => {
       if (
         input.classList.contains("question-input") ||
-        input.classList.contains("option-input")
+        input.classList.contains("option-input") ||
+        input.classList.contains("loader-input")
       ) {
         resetPreview();
       }
       updatePreview();
     });
   });
+
+  // Adicionar listener para o checkbox de retenção
+  const withRetentionCheckbox = document.getElementById("withRetention");
+  if (withRetentionCheckbox) {
+    withRetentionCheckbox.addEventListener("change", toggleRetentionFields);
+    // Inicializar estado
+    toggleRetentionFields();
+  }
 
   // Configurar drag and drop para perguntas já existentes
   const existingQuestions = document.querySelectorAll(".question-block");

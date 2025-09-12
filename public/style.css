@@ -119,6 +119,17 @@ button:hover {
   gap: 8px;
   background-color: #f4f4f4;
 }
+
+.loader-block {
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: #e8f5e8;
+  position: relative;
+}
 .options-container {
   display: flex;
   flex-direction: column;
@@ -173,31 +184,31 @@ h2 {
   transition: opacity 0.2s;
 }
 
-.question-block {
+.question-block, .loader-block {
   position: relative;
 }
 
-.question-block:hover .drag-handle {
+.question-block:hover .drag-handle, .loader-block:hover .drag-handle {
   opacity: 1;
 }
 
-.question-block.drag-over {
+.question-block.drag-over, .loader-block.drag-over {
   transform: scale(0.95);
 }
 
-.question-block.drag-over-top {
+.question-block.drag-over-top, .loader-block.drag-over-top {
   border-top: 3px solid #22C55D;
 }
 
-.question-block.drag-over-bottom {
+.question-block.drag-over-bottom, .loader-block.drag-over-bottom {
   border-bottom: 3px solid #22C55D;
 }
 
-.question-block[draggable="true"] {
+.question-block[draggable="true"], .loader-block[draggable="true"] {
   cursor: move;
 }
 
-.question-block[draggable="true"]:hover {
+.question-block[draggable="true"]:hover, .loader-block[draggable="true"]:hover {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
@@ -207,4 +218,34 @@ h2 {
   color: #666;
   margin-bottom: 5px;
   text-transform: uppercase;
+}
+
+.loader-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #22C55D;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+/* Animação para os pontos de loading - crescendo e diminuindo */
+@keyframes loadingDot {
+  0%, 100% {
+    transform: scale(0.5);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* Animação para a barra de progresso */
+@keyframes progressBarFill {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
 }

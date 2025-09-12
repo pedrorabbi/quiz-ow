@@ -35,6 +35,21 @@
 
           <hr />
 
+          <!-- Checkbox para controlar retenção -->
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              margin: 5px 0 10px 0;
+            "
+          >
+            <input type="checkbox" id="withRetention" checked />
+            <label for="withRetention" style="margin: 0; cursor: pointer"
+              >Com retenção</label
+            >
+          </div>
+
           <!-- Campo para label do anúncio -->
           <div class="floating-label-group">
             <input type="text" id="adLabel" placeholder=" " />
@@ -59,16 +74,19 @@
             <label for="description">Descrição</label>
           </div>
 
-          <!-- Campo para label do nome -->
-          <div class="floating-label-group">
-            <input type="text" id="nameLabel" placeholder=" " />
-            <label for="nameLabel">Label Nome</label>
-          </div>
+          <!-- Campos de retenção (nome e email) -->
+          <div id="retentionFields" style="flex-direction: column; gap: 10px">
+            <!-- Campo para label do nome -->
+            <div class="floating-label-group">
+              <input type="text" id="nameLabel" placeholder=" " />
+              <label for="nameLabel">Label Nome</label>
+            </div>
 
-          <!-- Campo para label do email -->
-          <div class="floating-label-group">
-            <input type="text" id="emailLabel" placeholder=" " />
-            <label for="emailLabel">Label Email</label>
+            <!-- Campo para label do email -->
+            <div class="floating-label-group">
+              <input type="text" id="emailLabel" placeholder=" " />
+              <label for="emailLabel">Label Email</label>
+            </div>
           </div>
 
           <!-- Campo para texto do botão -->
@@ -115,9 +133,12 @@
             <!-- Perguntas serão adicionadas aqui -->
           </div>
 
-          <!-- Botões para adicionar perguntas e criar o quiz -->
-          <div style="display: flex; gap: 10px">
-            <button onclick="addQuestion()">Adicionar Pergunta</button>
+          <!-- Botões para adicionar perguntas, loader e criar o quiz -->
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div style="display: flex; gap: 10px">
+              <button onclick="addQuestion()">Adicionar Pergunta</button>
+              <button onclick="addLoader()">Adicionar Loader</button>
+            </div>
             <button onclick="createHtmlTemplate()">Criar Quiz</button>
           </div>
         </div>
@@ -247,7 +268,7 @@
               >
                 Descrição do formulário
               </h4>
-              <div style="margin-bottom: 15px">
+              <div id="previewNameInputContainer" style="margin-bottom: 15px">
                 <input
                   id="previewNameInput"
                   type="text"
@@ -261,7 +282,7 @@
                   "
                 />
               </div>
-              <div style="margin-bottom: 15px">
+              <div id="previewEmailInputContainer" style="margin-bottom: 15px">
                 <input
                   id="previewEmailInput"
                   type="email"
