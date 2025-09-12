@@ -5,6 +5,7 @@
     <title>Quiz Offer Wall</title>
 
     <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <script src="./script.js"></script>
   </head>
   <body style="margin: 0; padding: 10px">
@@ -184,9 +185,10 @@
               cursor: pointer;
               width: fit-content;
               flex: 0;
+              white-space: nowrap;
             "
           >
-            Reset
+            Reset Preview
           </button>
         </div>
         <div
@@ -197,6 +199,7 @@
             background: white;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            margin-bottom: 20px;
           "
         >
           <!-- Barra de progresso fixa no topo -->
@@ -352,6 +355,28 @@
                 Rodapé do formulário
               </p>
             </div>
+          </div>
+        </div>
+
+        <!-- Histórico de Quizzes -->
+        <div
+          id="quizHistory"
+          style="
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+          "
+        >
+          <h3 style="margin: 0 0 15px 0; font-size: 16px; color: #333">
+            Histórico
+          </h3>
+          <div id="historyList" style="display: flex; flex-direction: column; gap: 10px">
+            <!-- Histórico será preenchido aqui -->
+          </div>
+          <div id="noHistory" style="color: #666; font-size: 14px; text-align: center; padding: 20px">
+            Nenhum quiz criado ainda
           </div>
         </div>
       </div>

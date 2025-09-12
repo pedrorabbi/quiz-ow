@@ -101,6 +101,10 @@ async function createHtmlTemplate() {
         // Caso sucesso, informa ao usuário e chama função para criar link
         apiResponse.textContent = "✅ Quiz criado com sucesso!";
         apiResponse.style.color = "green";
+        
+        // Salvar quiz no histórico antes de criar o link
+        saveQuizToHistory();
+        
         createLink(json.html_array);
       } else {
         // Caso resposta inesperada
@@ -298,7 +302,12 @@ function addLoader() {
   loaderDiv.draggable = true;
   loaderDiv.innerHTML = `
           <div class="drag-handle">≡≡</div>
-          <div class="loader-label">Loader ${index + 1}</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div class="loader-label">Loader ${index + 1}</div>
+            <button type="button" onclick="removeLoader(this)" style="background: transparent; color: #ef4444; border: 1px solid #ef4444; border-radius: 4px; padding: 4px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex: 0; width: fit-content;" title="Excluir loader">
+              <span class="material-symbols-rounded" style="font-size: 16px;">delete</span>
+            </button>
+          </div>
           <div class="floating-label-group">
             <input type="text" placeholder=" " class="loader-input" />
             <label>Texto do loader</label>
@@ -341,7 +350,12 @@ function addQuestion() {
   questionDiv.draggable = true;
   questionDiv.innerHTML = `
           <div class="drag-handle">≡≡</div>
-          <div class="question-number">Pergunta ${index + 1}</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div class="question-number">Pergunta ${index + 1}</div>
+            <button type="button" onclick="removeQuestion(this)" style="background: transparent; color: #ef4444; border: 1px solid #ef4444; border-radius: 4px; padding: 4px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex: 0; width: fit-content;" title="Excluir pergunta">
+              <span class="material-symbols-rounded" style="font-size: 16px;">delete</span>
+            </button>
+          </div>
           <div class="floating-label-group">
             <input type="text" placeholder=" " class="question-input" />
             <label>Texto da Pergunta</label>
@@ -418,6 +432,36 @@ function addOption(button) {
   optionsContainer.appendChild(wrapper);
 
   updatePreview();
+}
+
+// Função para remover uma pergunta
+function removeQuestion(button) {
+  const questionBlock = button.closest('.question-block');
+  if (questionBlock) {
+    questionBlock.remove();
+    
+    // Renumerar perguntas após remoção
+    setTimeout(() => {
+      renumberQuestions();
+      resetPreview();
+      updatePreview();
+    }, 10);
+  }
+}
+
+// Função para remover um loader
+function removeLoader(button) {
+  const loaderBlock = button.closest('.loader-block');
+  if (loaderBlock) {
+    loaderBlock.remove();
+    
+    // Renumerar loaders após remoção
+    setTimeout(() => {
+      renumberQuestions();
+      resetPreview();
+      updatePreview();
+    }, 10);
+  }
 }
 
 // Função para atualizar o preview em tempo real
@@ -916,4 +960,242 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Atualizar preview inicial
   updatePreview();
+  
+  // Carregar histórico ao iniciar
+  loadQuizHistory();
 });
+
+// Funções para gerenciar histórico de quizzes
+function saveQuizToHistory() {
+  const quizData = {
+    id: Date.now(),
+    createdAt: new Date().toLocaleString('pt-BR'),
+    vertical: document.getElementById("vertical").value,
+    domain: document.getElementById("domain").value,
+    withRetention: document.getElementById("withRetention").checked,
+    title: document.getElementById("title").value,
+    nameLabel: document.getElementById("nameLabel").value,
+    emailLabel: document.getElementById("emailLabel").value,
+    buttonText: document.getElementById("buttonText").value,
+    footnote: document.getElementById("footnote").value,
+    primaryColor: document.getElementById("primaryColor").value,
+    secondaryColor: document.getElementById("secondaryColor").value,
+    hoverColor: document.getElementById("hoverColor").value,
+    
+    // Salvar perguntas e loaders
+    items: []
+  };
+  
+  // Coletar todos os blocos (perguntas e loaders) na ordem atual
+  const allBlocks = Array.from(document.querySelectorAll(".question-block, .loader-block"));
+  
+  allBlocks.forEach((block) => {
+    if (block.classList.contains("question-block")) {
+      // É uma pergunta
+      const questionText = block.querySelector(".question-input").value;
+      const optionInputs = block.querySelectorAll(".option-input");
+      const options = Array.from(optionInputs)
+        .map((input) => input.value.trim())
+        .filter((option) => option !== "");
+      
+      if (questionText && options.length) {
+        quizData.items.push({
+          type: "question",
+          question: questionText,
+          options: options
+        });
+      }
+    } else if (block.classList.contains("loader-block")) {
+      // É um loader
+      const loaderText = block.querySelector(".loader-input").value.trim();
+      if (loaderText) {
+        quizData.items.push({
+          type: "loader",
+          text: loaderText
+        });
+      }
+    }
+  });
+  
+  // Carregar histórico existente
+  let history = JSON.parse(localStorage.getItem('quizHistory') || '[]');
+  
+  // Adicionar novo quiz no início
+  history.unshift(quizData);
+  
+  // Manter apenas os últimos 10 quizzes
+  if (history.length > 10) {
+    history = history.slice(0, 10);
+  }
+  
+  // Salvar no localStorage
+  localStorage.setItem('quizHistory', JSON.stringify(history));
+  
+  // Atualizar exibição do histórico
+  loadQuizHistory();
+}
+
+function loadQuizHistory() {
+  const history = JSON.parse(localStorage.getItem('quizHistory') || '[]');
+  const historyList = document.getElementById('historyList');
+  const noHistory = document.getElementById('noHistory');
+  
+  if (history.length === 0) {
+    historyList.style.display = 'none';
+    noHistory.style.display = 'block';
+    return;
+  }
+  
+  historyList.style.display = 'flex';
+  noHistory.style.display = 'none';
+  historyList.innerHTML = '';
+  
+  history.forEach((quiz, index) => {
+    const historyItem = document.createElement('div');
+    historyItem.style.cssText = `
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 12px;
+      background: #f9f9f9;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    `;
+    
+    const infoDiv = document.createElement('div');
+    infoDiv.style.flex = '1';
+    
+    const titleDiv = document.createElement('div');
+    titleDiv.style.cssText = 'font-weight: bold; font-size: 14px; color: #333; margin-bottom: 4px;';
+    titleDiv.textContent = quiz.title || quiz.vertical || 'Quiz sem título';
+    
+    const detailsDiv = document.createElement('div');
+    detailsDiv.style.cssText = 'font-size: 12px; color: #666;';
+    detailsDiv.textContent = `${quiz.createdAt} • ${quiz.items.filter(i => i.type === 'question').length} perguntas • ${quiz.items.filter(i => i.type === 'loader').length} loaders`;
+    
+    infoDiv.appendChild(titleDiv);
+    infoDiv.appendChild(detailsDiv);
+    
+    const duplicateButton = document.createElement('button');
+    duplicateButton.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px;">content_copy</span>';
+    duplicateButton.title = 'Duplicar quiz';
+    duplicateButton.style.cssText = `
+      padding: 4px;
+      background: transparent;
+      color: #22C55D;
+      border: 1px solid #22C55D;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 10px;
+      width: fit-content;
+      flex: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    `;
+    
+    duplicateButton.onclick = () => duplicateQuiz(quiz);
+    
+    historyItem.appendChild(infoDiv);
+    historyItem.appendChild(duplicateButton);
+    historyList.appendChild(historyItem);
+  });
+}
+
+function duplicateQuiz(quizData) {
+  // Limpar formulário atual
+  clearForm();
+  
+  // Preencher campos básicos
+  document.getElementById("vertical").value = quizData.vertical || '';
+  document.getElementById("domain").value = quizData.domain || '';
+  document.getElementById("withRetention").checked = quizData.withRetention || false;
+  document.getElementById("title").value = quizData.title || '';
+  document.getElementById("nameLabel").value = quizData.nameLabel || '';
+  document.getElementById("emailLabel").value = quizData.emailLabel || '';
+  document.getElementById("buttonText").value = quizData.buttonText || '';
+  document.getElementById("footnote").value = quizData.footnote || '';
+  document.getElementById("primaryColor").value = quizData.primaryColor || '#22C55D';
+  document.getElementById("secondaryColor").value = quizData.secondaryColor || '#16A349';
+  document.getElementById("hoverColor").value = quizData.hoverColor || '#16A349';
+  
+  // Atualizar campos de retenção
+  toggleRetentionFields();
+  
+  // Recriar perguntas e loaders na ordem original
+  const questionsContainer = document.getElementById("questionsContainer");
+  questionsContainer.innerHTML = '';
+  
+  quizData.items.forEach((item) => {
+    if (item.type === 'question') {
+      // Adicionar pergunta
+      addQuestion();
+      const questionBlocks = document.querySelectorAll('.question-block');
+      const lastQuestionBlock = questionBlocks[questionBlocks.length - 1];
+      
+      // Preencher texto da pergunta
+      const questionInput = lastQuestionBlock.querySelector('.question-input');
+      questionInput.value = item.question;
+      
+      // Preencher opções
+      const optionInputs = lastQuestionBlock.querySelectorAll('.option-input');
+      
+      // Adicionar opções extras se necessário
+      for (let i = optionInputs.length; i < item.options.length; i++) {
+        const addButton = lastQuestionBlock.querySelector('button[onclick*="addOption"]');
+        addOption(addButton);
+      }
+      
+      // Preencher todas as opções
+      const allOptionInputs = lastQuestionBlock.querySelectorAll('.option-input');
+      item.options.forEach((option, index) => {
+        if (allOptionInputs[index]) {
+          allOptionInputs[index].value = option;
+        }
+      });
+      
+    } else if (item.type === 'loader') {
+      // Adicionar loader
+      addLoader();
+      const loaderBlocks = document.querySelectorAll('.loader-block');
+      const lastLoaderBlock = loaderBlocks[loaderBlocks.length - 1];
+      
+      // Preencher texto do loader
+      const loaderInput = lastLoaderBlock.querySelector('.loader-input');
+      loaderInput.value = item.text;
+    }
+  });
+  
+  // Atualizar preview
+  resetPreview();
+  updatePreview();
+  
+  // Scroll para o topo do formulário
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function clearForm() {
+  // Limpar campos básicos
+  document.getElementById("vertical").value = '';
+  document.getElementById("domain").value = '';
+  document.getElementById("withRetention").checked = true;
+  document.getElementById("title").value = '';
+  document.getElementById("nameLabel").value = '';
+  document.getElementById("emailLabel").value = '';
+  document.getElementById("buttonText").value = '';
+  document.getElementById("footnote").value = '';
+  document.getElementById("primaryColor").value = '#22C55D';
+  document.getElementById("secondaryColor").value = '#16A349';
+  document.getElementById("hoverColor").value = '#16A349';
+  
+  // Limpar perguntas e loaders
+  document.getElementById("questionsContainer").innerHTML = '';
+  
+  // Limpar respostas da API
+  document.getElementById("apiResponse").innerHTML = '';
+  document.getElementById("linkResponse").innerHTML = '';
+  
+  // Resetar preview
+  resetPreview();
+  updatePreview();
+}
