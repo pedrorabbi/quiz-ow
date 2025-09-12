@@ -230,7 +230,12 @@ h2 {
 
 /* Garantir que o container mantenha layout consistente */
 #questionsContainer {
-  min-height: 50px;
+  min-height: 0px;
+}
+
+#questionsContainer:empty {
+  margin: 0;
+  padding: 0;
 }
 
 .question-number {

@@ -118,7 +118,7 @@ async function createHtmlTemplate() {
 
 // Função que cria o link do quiz a partir do template HTML gerado
 function createLink(htmlTemplate) {
-  const quizName = document.getElementById("quizName").value;
+  const quizName = document.getElementById("vertical").value;
 
   // Configuração dos headers para a requisição da criação do link
   const myHeaders = new Headers();
@@ -465,7 +465,7 @@ function updatePreview(showTitleInForm = null) {
     }
     if (previewTitle) {
       previewTitle.textContent = title;
-      // Mostrar título apenas quando estivermos no formulário final
+      // Sempre ocultar título durante as perguntas, só mostrar no formulário final
       previewTitle.style.display = showTitleInForm ? "block" : "none";
     }
     if (previewGreeting) {
@@ -759,7 +759,7 @@ function resetPreview() {
   document.getElementById("previewQuestions").style.display = "block";
   document.getElementById("previewForm").style.display = "none";
   updatePreviewQuestions();
-  // Garantir que o título fique oculto no início
+  // Garantir que o título fique oculto durante as perguntas
   updatePreview(false);
 }
 
