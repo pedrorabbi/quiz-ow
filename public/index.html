@@ -7,134 +7,304 @@
     <link rel="stylesheet" href="./style.css" />
     <script src="./script.js"></script>
   </head>
-  <body style="max-width: 500px; margin: 0 auto; padding: 10px">
-    <h1>Criação de Quiz com Offer Wall</h1>
+  <body style="margin: 0; padding: 10px">
+    <div style="display: flex; gap: 20px; max-width: 1200px; margin: 0 auto">
+      <!-- Lado esquerdo: Formulário -->
+      <div style="flex: 1; max-width: 500px">
+        <h1>Criação de Quiz com Offer Wall</h1>
 
-    <!-- Container principal do formulário do quiz -->
-    <div style="display: flex; flex-direction: column; gap: 10px">
-      <!-- Campo para nome do quiz -->
-      <div class="floating-label-group">
-        <input type="text" id="quizName" placeholder=" " />
-        <label for="quizName">Nome do Quiz</label>
-      </div>
+        <!-- Container principal do formulário do quiz -->
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <!-- Campo para nome do quiz -->
+          <div class="floating-label-group">
+            <input type="text" id="quizName" placeholder=" " />
+            <label for="quizName">Nome do Quiz</label>
+          </div>
 
-      <!-- Campo para vertical do quiz -->
-      <div class="floating-label-group">
-        <input type="text" id="vertical" placeholder=" " />
-        <label for="vertical">Vertical</label>
-      </div>
+          <!-- Campo para vertical do quiz -->
+          <div class="floating-label-group">
+            <input type="text" id="vertical" placeholder=" " />
+            <label for="vertical">Vertical</label>
+          </div>
 
-      <!-- Campo para domínio do quiz -->
-      <div class="floating-label-group">
-        <input type="text" id="domain" placeholder=" " />
-        <label for="domain">Domínio</label>
-      </div>
+          <!-- Campo para domínio do quiz -->
+          <div class="floating-label-group">
+            <input type="text" id="domain" placeholder=" " />
+            <label for="domain">Domínio</label>
+          </div>
 
-      <hr />
+          <hr />
 
-      <!-- Campo para label do anúncio -->
-      <div class="floating-label-group">
-        <input type="text" id="adLabel" placeholder=" " />
-        <label for="adLabel">Ad Label</label>
-      </div>
+          <!-- Campo para label do anúncio -->
+          <div class="floating-label-group">
+            <input type="text" id="adLabel" placeholder=" " />
+            <label for="adLabel">Ad Label</label>
+          </div>
 
-      <!-- Campo para título do quiz -->
-      <div class="floating-label-group">
-        <input type="text" id="title" placeholder=" " />
-        <label for="title">Título</label>
-      </div>
+          <!-- Campo para título do quiz -->
+          <div class="floating-label-group">
+            <input type="text" id="title" placeholder=" " />
+            <label for="title">Título</label>
+          </div>
 
-      <!-- Campo para subtítulo/greeting do quiz -->
-      <div class="floating-label-group">
-        <input type="text" id="greeting" placeholder=" " />
-        <label for="greeting">Subtítulo/Greeting</label>
-      </div>
+          <!-- Campo para subtítulo/greeting do quiz -->
+          <div class="floating-label-group">
+            <input type="text" id="greeting" placeholder=" " />
+            <label for="greeting">Subtítulo/Greeting</label>
+          </div>
 
-      <!-- Campo para descrição do quiz -->
-      <div class="floating-label-group">
-        <input type="text" id="description" placeholder=" " />
-        <label for="description">Descrição</label>
-      </div>
+          <!-- Campo para descrição do quiz -->
+          <div class="floating-label-group">
+            <input type="text" id="description" placeholder=" " />
+            <label for="description">Descrição</label>
+          </div>
 
-      <!-- Campo para label do nome -->
-      <div class="floating-label-group">
-        <input type="text" id="nameLabel" placeholder=" " />
-        <label for="nameLabel">Label Nome</label>
-      </div>
+          <!-- Campo para label do nome -->
+          <div class="floating-label-group">
+            <input type="text" id="nameLabel" placeholder=" " />
+            <label for="nameLabel">Label Nome</label>
+          </div>
 
-      <!-- Campo para label do email -->
-      <div class="floating-label-group">
-        <input type="text" id="emailLabel" placeholder=" " />
-        <label for="emailLabel">Label Email</label>
-      </div>
+          <!-- Campo para label do email -->
+          <div class="floating-label-group">
+            <input type="text" id="emailLabel" placeholder=" " />
+            <label for="emailLabel">Label Email</label>
+          </div>
 
-      <!-- Campo para texto do botão -->
-      <div class="floating-label-group">
-        <input type="text" id="buttonText" placeholder=" " />
-        <label for="buttonText">Texto do botão</label>
-      </div>
+          <!-- Campo para texto do botão -->
+          <div class="floating-label-group">
+            <input type="text" id="buttonText" placeholder=" " />
+            <label for="buttonText">Texto do botão</label>
+          </div>
 
-      <!-- Campo para rodapé -->
-      <div class="floating-label-group">
-        <input type="text" id="footnote" placeholder=" " />
-        <label for="footnote">Rodapé</label>
-      </div>
+          <!-- Campo para rodapé -->
+          <div class="floating-label-group">
+            <input type="text" id="footnote" placeholder=" " />
+            <label for="footnote">Rodapé</label>
+          </div>
 
-      <hr />
+          <hr />
 
-      <!-- Seletores de cor para personalização do quiz -->
-      <div class="colorRow">
-        <label for="primaryColor">Cor Primária:</label>
-        <div class="colorInputWrapper">
-          <input type="color" id="primaryColor" value="#22C55D" />
+          <!-- Seletores de cor para personalização do quiz -->
+          <div class="colorRow">
+            <label for="primaryColor">Cor Primária:</label>
+            <div class="colorInputWrapper">
+              <input type="color" id="primaryColor" value="#22C55D" />
+            </div>
+          </div>
+
+          <div class="colorRow">
+            <label for="secondaryColor">Cor Secundária:</label>
+            <div class="colorInputWrapper">
+              <input type="color" id="secondaryColor" value="#16A349" />
+            </div>
+          </div>
+
+          <div class="colorRow">
+            <label for="hoverColor">Cor de Hover:</label>
+            <div class="colorInputWrapper">
+              <input type="color" id="hoverColor" value="#16A349" />
+            </div>
+          </div>
+
+          <!-- Container onde as perguntas do quiz serão adicionadas dinamicamente -->
+          <div
+            id="questionsContainer"
+            style="display: flex; flex-direction: column; gap: 20px"
+          >
+            <!-- Perguntas serão adicionadas aqui -->
+          </div>
+
+          <!-- Botões para adicionar perguntas e criar o quiz -->
+          <div style="display: flex; gap: 10px">
+            <button onclick="addQuestion()">Adicionar Pergunta</button>
+            <button onclick="createHtmlTemplate()">Criar Quiz</button>
+          </div>
         </div>
+
+        <!-- Área para exibir resposta da API após submissão -->
+        <div
+          id="apiResponse"
+          style="display: flex; justify-content: center; margin-top: 10px"
+        ></div>
+
+        <!-- Área para exibir link gerado após criação do template -->
+        <div
+          id="linkResponse"
+          style="
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-top: 10px;
+            text-align: center;
+          "
+        ></div>
       </div>
 
-      <div class="colorRow">
-        <label for="secondaryColor">Cor Secundária:</label>
-        <div class="colorInputWrapper">
-          <input type="color" id="secondaryColor" value="#16A349" />
+      <!-- Lado direito: Preview -->
+      <div style="flex: 1; position: sticky; top: 20px; height: fit-content">
+        <div
+          style="
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 15px;
+          "
+        >
+          <button
+            onclick="resetPreview()"
+            style="
+              padding: 6px 12px;
+              background: white;
+              color: #666;
+              border: 1px solid #ddd;
+              border-radius: 4px;
+              font-size: 12px;
+              cursor: pointer;
+              width: fit-content;
+              flex: 0;
+            "
+          >
+            Reset
+          </button>
         </div>
-      </div>
+        <div
+          id="quizPreview"
+          style="
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          "
+        >
+          <div id="previewContent">
+            <div
+              id="previewHeader"
+              style="text-align: center; margin-bottom: 20px"
+            >
+              <div
+                id="previewAdLabel"
+                style="font-size: 12px; color: #666; margin-bottom: 5px"
+              >
+                Ad Label
+              </div>
+              <h3 id="previewTitle" style="margin: 0 0 10px 0; color: #333">
+                Título do Quiz
+              </h3>
+              <p
+                id="previewGreeting"
+                style="margin: 0; color: #666; font-size: 14px"
+              >
+                Subtítulo do quiz
+              </p>
+            </div>
 
-      <div class="colorRow">
-        <label for="hoverColor">Cor de Hover:</label>
-        <div class="colorInputWrapper">
-          <input type="color" id="hoverColor" value="#16A349" />
+            <div id="previewQuestions">
+              <div class="preview-question" style="margin-bottom: 20px">
+                <h4 style="margin: 0 0 15px 0; color: #333">
+                  Pergunta de exemplo
+                </h4>
+                <div class="preview-options">
+                  <button
+                    class="preview-option"
+                    style="
+                      display: block;
+                      width: 100%;
+                      padding: 12px;
+                      margin: 8px 0;
+                      border: none;
+                      border-radius: 6px;
+                      cursor: pointer;
+                      font-size: 14px;
+                    "
+                  >
+                    Opção 1
+                  </button>
+                  <button
+                    class="preview-option"
+                    style="
+                      display: block;
+                      width: 100%;
+                      padding: 12px;
+                      margin: 8px 0;
+                      border: none;
+                      border-radius: 6px;
+                      cursor: pointer;
+                      font-size: 14px;
+                    "
+                  >
+                    Opção 2
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div id="previewForm" style="margin-top: 30px; display: none">
+              <h4
+                id="previewDescription"
+                style="margin: 0 0 20px 0; color: #333"
+              >
+                Descrição do formulário
+              </h4>
+              <div style="margin-bottom: 15px">
+                <input
+                  id="previewNameInput"
+                  type="text"
+                  placeholder="Seu nome"
+                  style="
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #ddd;
+                    border-radius: 6px;
+                    box-sizing: border-box;
+                  "
+                />
+              </div>
+              <div style="margin-bottom: 15px">
+                <input
+                  id="previewEmailInput"
+                  type="email"
+                  placeholder="Seu email"
+                  style="
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #ddd;
+                    border-radius: 6px;
+                    box-sizing: border-box;
+                  "
+                />
+              </div>
+              <button
+                id="previewButton"
+                style="
+                  width: 100%;
+                  padding: 15px;
+                  border: none;
+                  border-radius: 6px;
+                  font-size: 16px;
+                  font-weight: bold;
+                  cursor: pointer;
+                  color: white;
+                "
+              >
+                Enviar
+              </button>
+              <p
+                id="previewFootnote"
+                style="
+                  font-size: 12px;
+                  color: #666;
+                  text-align: center;
+                  margin-top: 15px;
+                "
+              >
+                Rodapé do formulário
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <!-- Container onde as perguntas do quiz serão adicionadas dinamicamente -->
-      <div
-        id="questionsContainer"
-        style="display: flex; flex-direction: column; gap: 20px"
-      >
-        <!-- Perguntas serão adicionadas aqui -->
-      </div>
-
-      <!-- Botões para adicionar perguntas e criar o quiz -->
-      <div style="display: flex; gap: 10px">
-        <button onclick="addQuestion()">Adicionar Pergunta</button>
-        <button onclick="createHtmlTemplate()">Criar Quiz</button>
       </div>
     </div>
-
-    <!-- Área para exibir resposta da API após submissão -->
-    <div
-      id="apiResponse"
-      style="display: flex; justify-content: center; margin-top: 10px"
-    ></div>
-
-    <!-- Área para exibir link gerado após criação do template -->
-    <div
-      id="linkResponse"
-      style="
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        margin-top: 10px;
-        text-align: center;
-      "
-    ></div>
   </body>
 </html>

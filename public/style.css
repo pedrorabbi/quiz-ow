@@ -128,3 +128,83 @@ button:hover {
 * {
   transition: all 0.2s ease;
 }
+
+/* Estilos para o preview */
+#quizPreview {
+  font-family: sans-serif;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  body {
+    flex-direction: column !important;
+  }
+  
+  #quizPreview {
+    position: static !important;
+    max-height: none;
+    margin-top: 20px;
+  }
+}
+
+.preview-option:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+h2 {
+  font-size: 20px;
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+/* Estilos para drag and drop */
+.drag-handle {
+  position: absolute;
+  left: -25px;
+  top: 10px;
+  cursor: move;
+  color: #999;
+  font-weight: bold;
+  font-size: 14px;
+  user-select: none;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.question-block {
+  position: relative;
+}
+
+.question-block:hover .drag-handle {
+  opacity: 1;
+}
+
+.question-block.drag-over {
+  transform: scale(0.95);
+}
+
+.question-block.drag-over-top {
+  border-top: 3px solid #22C55D;
+}
+
+.question-block.drag-over-bottom {
+  border-bottom: 3px solid #22C55D;
+}
+
+.question-block[draggable="true"] {
+  cursor: move;
+}
+
+.question-block[draggable="true"]:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.question-number {
+  font-size: 12px;
+  font-weight: bold;
+  color: #666;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
