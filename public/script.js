@@ -460,6 +460,25 @@ function updatePreview() {
 // Variável para controlar o step atual no preview
 let currentPreviewStep = 0;
 
+// Função para atualizar a barra de progresso no topo
+function updateTopProgressBar(currentStep, totalSteps) {
+  const topProgressFill = document.getElementById("topProgressFill");
+  if (!topProgressFill) return;
+  
+  // Contar quantas perguntas já foram respondidas
+  const allBlocks = Array.from(document.querySelectorAll(".question-block, .loader-block"));
+  let questionsAnswered = 0;
+  
+  for (let i = 0; i < currentStep; i++) {
+    if (allBlocks[i] && allBlocks[i].classList.contains("question-block")) {
+      questionsAnswered++;
+    }
+  }
+  
+  const progress = (questionsAnswered / (totalSteps - 1)) * 100;
+  topProgressFill.style.width = `${progress}%`;
+}
+
 // Função para atualizar as perguntas no preview
 function updatePreviewQuestions() {
   try {
@@ -467,6 +486,13 @@ function updatePreviewQuestions() {
     if (!questionsContainer) return;
 
     const allBlocks = Array.from(document.querySelectorAll(".question-block, .loader-block"));
+    const questionBlocks = Array.from(document.querySelectorAll(".question-block"));
+    
+    // Total de steps = perguntas + formulário
+    const totalSteps = questionBlocks.length + 1;
+    
+    // Atualizar barra de progresso no topo
+    updateTopProgressBar(currentPreviewStep, totalSteps);
 
     // Limpar conteúdo existente no preview
     questionsContainer.innerHTML = "";
@@ -489,10 +515,17 @@ function updatePreviewQuestions() {
       const currentBlock = allBlocks[currentPreviewStep];
       if (currentBlock) {
         if (currentBlock.classList.contains("question-block")) {
-          // É uma pergunta
+          // É uma pergunta - contar quantas perguntas vieram antes
+          let questionIndex = 0;
+          for (let i = 0; i < currentPreviewStep; i++) {
+            if (allBlocks[i].classList.contains("question-block")) {
+              questionIndex++;
+            }
+          }
+          
           const questionInput = currentBlock.querySelector(".question-input");
           const questionText =
-            questionInput?.value || `Pergunta ${currentPreviewStep + 1}`;
+            questionInput?.value || `Pergunta ${questionIndex + 1}`;
           const optionInputs = currentBlock.querySelectorAll(".option-input");
 
           const options = Array.from(optionInputs)
@@ -506,20 +539,16 @@ function updatePreviewQuestions() {
           const questionDiv = createPreviewQuestion(
             questionText,
             displayOptions,
-            currentPreviewStep,
-            allBlocks.length
+            questionIndex,
+            totalSteps
           );
           questionsContainer.appendChild(questionDiv);
         } else if (currentBlock.classList.contains("loader-block")) {
-          // É um loader
+          // É um loader - não conta como step
           const loaderInput = currentBlock.querySelector(".loader-input");
           const loaderText = loaderInput?.value || "WIR SUCHEN DIE BESTEN KREDITOPTIONEN FÜR SIE ...";
           
-          const loaderDiv = createPreviewLoader(
-            loaderText,
-            currentPreviewStep,
-            allBlocks.length
-          );
+          const loaderDiv = createPreviewLoader(loaderText);
           questionsContainer.appendChild(loaderDiv);
         }
       }
@@ -544,27 +573,6 @@ function createPreviewQuestion(questionText, options, stepIndex, totalSteps) {
   questionDiv.className = "preview-question";
   questionDiv.style.marginBottom = "20px";
 
-  // Indicador de progresso
-  if (totalSteps > 1) {
-    const progressDiv = document.createElement("div");
-    progressDiv.style.cssText =
-      "display: flex; gap: 4px; margin-bottom: 15px; justify-content: center;";
-
-    for (let i = 0; i < totalSteps; i++) {
-      const dot = document.createElement("div");
-      dot.style.cssText = `
-        width: 8px; 
-        height: 8px; 
-        border-radius: 50%; 
-        background-color: ${i <= stepIndex ? "#22C55D" : "#ddd"};
-        transition: background-color 0.3s ease;
-      `;
-      progressDiv.appendChild(dot);
-    }
-
-    questionDiv.appendChild(progressDiv);
-  }
-
   const questionTitle = document.createElement("h4");
   questionTitle.textContent = questionText;
   questionTitle.style.margin = "0 0 15px 0";
@@ -584,14 +592,19 @@ function createPreviewQuestion(questionText, options, stepIndex, totalSteps) {
 
       // Adicionar evento de click para avançar para próximo step
       optionButton.addEventListener("click", () => {
-        const questionBlocks = document.querySelectorAll(".question-block");
-        if (currentPreviewStep < questionBlocks.length - 1) {
+        const allBlocks = Array.from(document.querySelectorAll(".question-block, .loader-block"));
+        if (currentPreviewStep < allBlocks.length - 1) {
           currentPreviewStep++;
           updatePreviewQuestions();
         } else {
           // Última pergunta - mostrar formulário
           document.getElementById("previewQuestions").style.display = "none";
           document.getElementById("previewForm").style.display = "block";
+          // Atualizar progress bar para mostrar que estamos no formulário (não 100% ainda)
+          const questionBlocks = document.querySelectorAll(".question-block");
+          const totalSteps = questionBlocks.length + 1;
+          const progress = (questionBlocks.length / totalSteps) * 100; // Perguntas respondidas / total
+          document.getElementById("topProgressFill").style.width = `${progress}%`;
         }
       });
 
@@ -606,31 +619,10 @@ function createPreviewQuestion(questionText, options, stepIndex, totalSteps) {
 }
 
 // Função para criar um loader no preview
-function createPreviewLoader(loaderText, stepIndex, totalSteps) {
+function createPreviewLoader(loaderText) {
   const loaderDiv = document.createElement("div");
   loaderDiv.className = "preview-loader";
   loaderDiv.style.cssText = "text-align: center; margin-bottom: 20px;";
-
-  // Indicador de progresso
-  if (totalSteps > 1) {
-    const progressDiv = document.createElement("div");
-    progressDiv.style.cssText =
-      "display: flex; gap: 4px; margin-bottom: 15px; justify-content: center;";
-
-    for (let i = 0; i < totalSteps; i++) {
-      const dot = document.createElement("div");
-      dot.style.cssText = `
-        width: 8px; 
-        height: 8px; 
-        border-radius: 50%; 
-        background-color: ${i <= stepIndex ? "#22C55D" : "#ddd"};
-        transition: background-color 0.3s ease;
-      `;
-      progressDiv.appendChild(dot);
-    }
-
-    loaderDiv.appendChild(progressDiv);
-  }
 
   // Texto do loader
   const loaderTextDiv = document.createElement("div");
@@ -679,6 +671,11 @@ function createPreviewLoader(loaderText, stepIndex, totalSteps) {
       // Última step - mostrar formulário
       document.getElementById("previewQuestions").style.display = "none";
       document.getElementById("previewForm").style.display = "block";
+      // Atualizar progress bar para mostrar que estamos no formulário (não 100% ainda)
+      const questionBlocks = document.querySelectorAll(".question-block");
+      const totalSteps = questionBlocks.length + 1;
+      const progress = (questionBlocks.length / totalSteps) * 100; // Perguntas respondidas / total
+      document.getElementById("topProgressFill").style.width = `${progress}%`;
     }
   }, 2000);
 
@@ -796,6 +793,15 @@ document.addEventListener("DOMContentLoaded", function () {
           updatePreview();
         }, 50);
       }
+    });
+  }
+
+  // Adicionar listener ao botão do formulário do preview
+  const previewButton = document.getElementById("previewButton");
+  if (previewButton) {
+    previewButton.addEventListener("click", () => {
+      // Completar barra de progresso quando enviar formulário
+      document.getElementById("topProgressFill").style.width = "100%";
     });
   }
 

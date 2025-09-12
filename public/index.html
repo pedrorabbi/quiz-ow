@@ -194,12 +194,33 @@
           style="
             border: 1px solid #ccc;
             border-radius: 8px;
-            padding: 20px;
             background: white;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
           "
         >
-          <div id="previewContent">
+          <!-- Barra de progresso fixa no topo -->
+          <div
+            id="topProgressBar"
+            style="
+              width: 100%;
+              height: 4px;
+              background-color: #e0e0e0;
+              position: relative;
+            "
+          >
+            <div
+              id="topProgressFill"
+              style="
+                height: 100%;
+                background-color: #22c55d;
+                width: 0%;
+                transition: width 0.3s ease;
+              "
+            ></div>
+          </div>
+
+          <div id="previewContent" style="padding: 20px">
             <div
               id="previewHeader"
               style="text-align: center; margin-bottom: 20px"
