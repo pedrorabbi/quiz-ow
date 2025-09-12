@@ -159,7 +159,7 @@ button:hover {
   body {
     flex-direction: column !important;
   }
-  
+
   #quizPreview {
     position: static !important;
     max-height: none;
@@ -192,38 +192,45 @@ h2 {
   transition: opacity 0.2s;
 }
 
-.question-block, .loader-block {
+.question-block,
+.loader-block {
   position: relative;
   width: 100%;
   flex-shrink: 0;
 }
 
-.question-block:hover .drag-handle, .loader-block:hover .drag-handle {
+.question-block:hover .drag-handle,
+.loader-block:hover .drag-handle {
   opacity: 1;
 }
 
-.question-block.drag-over, .loader-block.drag-over {
+.question-block.drag-over,
+.loader-block.drag-over {
   transform: scale(0.98);
   transition: transform 0.2s ease;
 }
 
-.question-block.drag-over-top, .loader-block.drag-over-top {
-  border-top: 3px solid #22C55D;
+.question-block.drag-over-top,
+.loader-block.drag-over-top {
+  border-top: 3px solid #22c55d;
   margin-top: 3px;
 }
 
-.question-block.drag-over-bottom, .loader-block.drag-over-bottom {
-  border-bottom: 3px solid #22C55D;
+.question-block.drag-over-bottom,
+.loader-block.drag-over-bottom {
+  border-bottom: 3px solid #22c55d;
   margin-bottom: 3px;
 }
 
-.question-block[draggable="true"], .loader-block[draggable="true"] {
+.question-block[draggable="true"],
+.loader-block[draggable="true"] {
   cursor: move;
   user-select: none;
 }
 
-.question-block[draggable="true"]:hover, .loader-block[draggable="true"]:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+.question-block[draggable="true"]:hover,
+.loader-block[draggable="true"]:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
   transition: all 0.2s ease;
 }
@@ -242,21 +249,21 @@ h2 {
   font-size: 12px;
   font-weight: bold;
   color: #666;
-  margin-bottom: 5px;
   text-transform: uppercase;
 }
 
 .loader-label {
   font-size: 12px;
   font-weight: bold;
-  color: #22C55D;
+  color: #22c55d;
   margin-bottom: 5px;
   text-transform: uppercase;
 }
 
 /* Animação para os pontos de loading - crescendo e diminuindo */
 @keyframes loadingDot {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(0.5);
     opacity: 0.5;
   }

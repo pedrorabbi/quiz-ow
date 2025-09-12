@@ -101,10 +101,10 @@ async function createHtmlTemplate() {
         // Caso sucesso, informa ao usuário e chama função para criar link
         apiResponse.textContent = "✅ Quiz criado com sucesso!";
         apiResponse.style.color = "green";
-        
+
         // Salvar quiz no histórico antes de criar o link
         saveQuizToHistory();
-        
+
         createLink(json.html_array);
       } else {
         // Caso resposta inesperada
@@ -350,7 +350,7 @@ function addQuestion() {
   questionDiv.draggable = true;
   questionDiv.innerHTML = `
           <div class="drag-handle">≡≡</div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
             <div class="question-number">Pergunta ${index + 1}</div>
             <button type="button" onclick="removeQuestion(this)" style="background: transparent; color: #ef4444; border: 1px solid #ef4444; border-radius: 4px; padding: 4px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex: 0; width: fit-content;" title="Excluir pergunta">
               <span class="material-symbols-rounded" style="font-size: 16px;">delete</span>
@@ -436,10 +436,10 @@ function addOption(button) {
 
 // Função para remover uma pergunta
 function removeQuestion(button) {
-  const questionBlock = button.closest('.question-block');
+  const questionBlock = button.closest(".question-block");
   if (questionBlock) {
     questionBlock.remove();
-    
+
     // Renumerar perguntas após remoção
     setTimeout(() => {
       renumberQuestions();
@@ -451,10 +451,10 @@ function removeQuestion(button) {
 
 // Função para remover um loader
 function removeLoader(button) {
-  const loaderBlock = button.closest('.loader-block');
+  const loaderBlock = button.closest(".loader-block");
   if (loaderBlock) {
     loaderBlock.remove();
-    
+
     // Renumerar loaders após remoção
     setTimeout(() => {
       renumberQuestions();
@@ -486,8 +486,7 @@ function updatePreview(showTitleInForm = null) {
     const title = document.getElementById("title")?.value || "Título do Quiz";
     const greeting =
       document.getElementById("greeting")?.value || "Subtítulo do quiz";
-    const description =
-      document.getElementById("description")?.value || "-";
+    const description = document.getElementById("description")?.value || "-";
     const nameLabel = document.getElementById("nameLabel")?.value || "Seu nome";
     const emailLabel =
       document.getElementById("emailLabel")?.value || "Seu email";
@@ -533,7 +532,7 @@ function updatePreview(showTitleInForm = null) {
     const previewForm = document.getElementById("previewForm");
     const isShowingForm = previewForm && previewForm.style.display === "block";
     const previewContent = document.getElementById("previewContent");
-    
+
     // Ajustar padding baseado no estado
     if (previewContent) {
       if (isShowingForm) {
@@ -544,7 +543,7 @@ function updatePreview(showTitleInForm = null) {
         previewContent.style.padding = "0 20px";
       }
     }
-    
+
     if (!isShowingForm) {
       updatePreviewQuestions();
     }
@@ -960,7 +959,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Atualizar preview inicial
   updatePreview();
-  
+
   // Carregar histórico ao iniciar
   loadQuizHistory();
 });
@@ -969,7 +968,7 @@ document.addEventListener("DOMContentLoaded", function () {
 function saveQuizToHistory() {
   const quizData = {
     id: Date.now(),
-    createdAt: new Date().toLocaleString('pt-BR'),
+    createdAt: new Date().toLocaleString("pt-BR"),
     vertical: document.getElementById("vertical").value,
     domain: document.getElementById("domain").value,
     withRetention: document.getElementById("withRetention").checked,
@@ -981,14 +980,16 @@ function saveQuizToHistory() {
     primaryColor: document.getElementById("primaryColor").value,
     secondaryColor: document.getElementById("secondaryColor").value,
     hoverColor: document.getElementById("hoverColor").value,
-    
+
     // Salvar perguntas e loaders
-    items: []
+    items: [],
   };
-  
+
   // Coletar todos os blocos (perguntas e loaders) na ordem atual
-  const allBlocks = Array.from(document.querySelectorAll(".question-block, .loader-block"));
-  
+  const allBlocks = Array.from(
+    document.querySelectorAll(".question-block, .loader-block")
+  );
+
   allBlocks.forEach((block) => {
     if (block.classList.contains("question-block")) {
       // É uma pergunta
@@ -997,12 +998,12 @@ function saveQuizToHistory() {
       const options = Array.from(optionInputs)
         .map((input) => input.value.trim())
         .filter((option) => option !== "");
-      
+
       if (questionText && options.length) {
         quizData.items.push({
           type: "question",
           question: questionText,
-          options: options
+          options: options,
         });
       }
     } else if (block.classList.contains("loader-block")) {
@@ -1011,74 +1012,110 @@ function saveQuizToHistory() {
       if (loaderText) {
         quizData.items.push({
           type: "loader",
-          text: loaderText
+          text: loaderText,
         });
       }
     }
   });
-  
+
   // Carregar histórico existente
-  let history = JSON.parse(localStorage.getItem('quizHistory') || '[]');
-  
+  let history = JSON.parse(localStorage.getItem("quizHistory") || "[]");
+
   // Adicionar novo quiz no início
   history.unshift(quizData);
-  
+
   // Manter apenas os últimos 10 quizzes
   if (history.length > 10) {
     history = history.slice(0, 10);
   }
-  
+
   // Salvar no localStorage
-  localStorage.setItem('quizHistory', JSON.stringify(history));
-  
+  localStorage.setItem("quizHistory", JSON.stringify(history));
+
   // Atualizar exibição do histórico
   loadQuizHistory();
 }
 
 function loadQuizHistory() {
-  const history = JSON.parse(localStorage.getItem('quizHistory') || '[]');
-  const historyList = document.getElementById('historyList');
-  const noHistory = document.getElementById('noHistory');
-  
+  const history = JSON.parse(localStorage.getItem("quizHistory") || "[]");
+  const historyList = document.getElementById("historyList");
+  const noHistory = document.getElementById("noHistory");
+
   if (history.length === 0) {
-    historyList.style.display = 'none';
-    noHistory.style.display = 'block';
+    historyList.style.display = "none";
+    noHistory.style.display = "block";
     return;
   }
-  
-  historyList.style.display = 'flex';
-  noHistory.style.display = 'none';
-  historyList.innerHTML = '';
-  
+
+  historyList.style.display = "flex";
+  noHistory.style.display = "none";
+  historyList.innerHTML = "";
+
   history.forEach((quiz, index) => {
-    const historyItem = document.createElement('div');
+    const historyItem = document.createElement("div");
     historyItem.style.cssText = `
       border: 1px solid #e0e0e0;
       border-radius: 6px;
       padding: 12px;
       background: #f9f9f9;
+      margin-bottom: 8px;
+    `;
+
+    // Header do item com informações básicas
+    const headerDiv = document.createElement("div");
+    headerDiv.style.cssText = `
       display: flex;
       justify-content: space-between;
       align-items: center;
+      cursor: pointer;
     `;
-    
-    const infoDiv = document.createElement('div');
-    infoDiv.style.flex = '1';
-    
-    const titleDiv = document.createElement('div');
-    titleDiv.style.cssText = 'font-weight: bold; font-size: 14px; color: #333; margin-bottom: 4px;';
-    titleDiv.textContent = quiz.title || quiz.vertical || 'Quiz sem título';
-    
-    const detailsDiv = document.createElement('div');
-    detailsDiv.style.cssText = 'font-size: 12px; color: #666;';
-    detailsDiv.textContent = `${quiz.createdAt} • ${quiz.items.filter(i => i.type === 'question').length} perguntas • ${quiz.items.filter(i => i.type === 'loader').length} loaders`;
-    
+
+    const infoDiv = document.createElement("div");
+    infoDiv.style.flex = "1";
+
+    const titleDiv = document.createElement("div");
+    titleDiv.style.cssText =
+      "font-weight: bold; font-size: 14px; color: #333; margin-bottom: 4px;";
+    titleDiv.textContent = quiz.title || quiz.vertical || "Quiz sem título";
+
+    const detailsDiv = document.createElement("div");
+    detailsDiv.style.cssText = "font-size: 12px; color: #666;";
+    detailsDiv.textContent = `${quiz.createdAt} • ${
+      quiz.items.filter((i) => i.type === "question").length
+    } perguntas • ${
+      quiz.items.filter((i) => i.type === "loader").length
+    } loaders`;
+
     infoDiv.appendChild(titleDiv);
     infoDiv.appendChild(detailsDiv);
-    
-    const duplicateButton = document.createElement('button');
-    duplicateButton.innerHTML = '<span class="material-symbols-rounded" style="font-size: 16px;">content_copy</span>';
-    duplicateButton.title = 'Duplicar quiz';
+
+    // Container dos botões
+    const buttonsDiv = document.createElement("div");
+    buttonsDiv.style.cssText = "display: flex; gap: 8px; align-items: center;";
+
+    // Botão de expandir/colapsar
+    const toggleButton = document.createElement("button");
+    toggleButton.innerHTML =
+      '<span class="material-symbols-rounded" style="font-size: 16px;">expand_more</span>';
+    toggleButton.title = "Expandir detalhes";
+    toggleButton.style.cssText = `
+      padding: 4px;
+      background: transparent;
+      color: #666;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      width: fit-content;
+      flex: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    `;
+
+    const duplicateButton = document.createElement("button");
+    duplicateButton.innerHTML =
+      '<span class="material-symbols-rounded" style="font-size: 16px;">content_copy</span>';
+    duplicateButton.title = "Duplicar quiz";
     duplicateButton.style.cssText = `
       padding: 4px;
       background: transparent;
@@ -1086,18 +1123,141 @@ function loadQuizHistory() {
       border: 1px solid #22C55D;
       border-radius: 4px;
       cursor: pointer;
-      margin-left: 10px;
       width: fit-content;
       flex: 0;
       display: flex;
       align-items: center;
       justify-content: center;
     `;
-    
-    duplicateButton.onclick = () => duplicateQuiz(quiz);
-    
-    historyItem.appendChild(infoDiv);
-    historyItem.appendChild(duplicateButton);
+
+    buttonsDiv.appendChild(toggleButton);
+    buttonsDiv.appendChild(duplicateButton);
+
+    headerDiv.appendChild(infoDiv);
+    headerDiv.appendChild(buttonsDiv);
+
+    // Conteúdo expandível com detalhes dos steps
+    const expandableDiv = document.createElement("div");
+    expandableDiv.style.cssText = `
+      display: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e0e0e0;
+    `;
+
+    // Lista de steps
+    if (quiz.items && quiz.items.length > 0) {
+      const stepsTitle = document.createElement("div");
+      stepsTitle.style.cssText =
+        "font-weight: bold; font-size: 12px; color: #666; margin-bottom: 8px; text-transform: uppercase;";
+      stepsTitle.textContent = "Steps do Quiz:";
+      expandableDiv.appendChild(stepsTitle);
+
+      quiz.items.forEach((item, stepIndex) => {
+        const stepDiv = document.createElement("div");
+        stepDiv.style.cssText = `
+          padding: 8px;
+          margin: 4px 0;
+          border-radius: 4px;
+          font-size: 12px;
+          ${
+            item.type === "question"
+              ? "background: #f0f9ff; border-left: 3px solid #0ea5e9;"
+              : "background: #f0fdf4; border-left: 3px solid #22c55e;"
+          }
+        `;
+
+        if (item.type === "question") {
+          stepDiv.innerHTML = `
+            <div style="font-weight: bold; color: #0ea5e9; margin-bottom: 4px;">
+              📝 Pergunta ${stepIndex + 1}
+            </div>
+            <div style="color: #333; margin-bottom: 4px;">${item.question}</div>
+            <div style="color: #666; font-size: 11px;">
+              Opções: ${item.options.join(" • ")}
+            </div>
+          `;
+        } else {
+          stepDiv.innerHTML = `
+            <div style="font-weight: bold; color: #22c55e; margin-bottom: 4px;">
+              ⏳ Loader ${stepIndex + 1}
+            </div>
+            <div style="color: #333;">${item.text}</div>
+          `;
+        }
+
+        expandableDiv.appendChild(stepDiv);
+      });
+    }
+
+    // Configurações do quiz
+    const configTitle = document.createElement("div");
+    configTitle.style.cssText =
+      "font-weight: bold; font-size: 12px; color: #666; margin: 12px 0 8px 0; text-transform: uppercase;";
+    configTitle.textContent = "Configurações:";
+    expandableDiv.appendChild(configTitle);
+
+    const configDiv = document.createElement("div");
+    configDiv.style.cssText = "font-size: 12px; color: #666; line-height: 1.4;";
+    configDiv.innerHTML = `
+      <div><strong>Vertical:</strong> ${quiz.vertical || "Não definido"}</div>
+      <div><strong>Domínio:</strong> ${quiz.domain || "Não definido"}</div>
+      <div><strong>Com retenção:</strong> ${
+        quiz.withRetention ? "Sim" : "Não"
+      }</div>
+      <div><strong>Botão final:</strong> ${
+        quiz.buttonText || "Não definido"
+      }</div>
+      <div><strong>Rodapé:</strong> ${quiz.footnote || "Não definido"}</div>
+      <div><strong>Cores:</strong> 
+        <span style="display: inline-block; width: 12px; height: 12px; background: ${
+          quiz.primaryColor
+        }; border: 1px solid #ccc; border-radius: 2px; margin: 0 2px;"></span>
+        <span style="display: inline-block; width: 12px; height: 12px; background: ${
+          quiz.secondaryColor
+        }; border: 1px solid #ccc; border-radius: 2px; margin: 0 2px;"></span>
+        <span style="display: inline-block; width: 12px; height: 12px; background: ${
+          quiz.hoverColor
+        }; border: 1px solid #ccc; border-radius: 2px; margin: 0 2px;"></span>
+      </div>
+    `;
+    expandableDiv.appendChild(configDiv);
+
+    // Eventos
+    let isExpanded = false;
+    const toggleExpand = () => {
+      isExpanded = !isExpanded;
+      if (isExpanded) {
+        expandableDiv.style.display = "block";
+        toggleButton.innerHTML =
+          '<span class="material-symbols-rounded" style="font-size: 16px;">expand_less</span>';
+        toggleButton.title = "Recolher detalhes";
+      } else {
+        expandableDiv.style.display = "none";
+        toggleButton.innerHTML =
+          '<span class="material-symbols-rounded" style="font-size: 16px;">expand_more</span>';
+        toggleButton.title = "Expandir detalhes";
+      }
+    };
+
+    toggleButton.onclick = (e) => {
+      e.stopPropagation();
+      toggleExpand();
+    };
+    headerDiv.onclick = (e) => {
+      // Só expandir se não clicou nos botões
+      if (!e.target.closest("button")) {
+        toggleExpand();
+      }
+    };
+
+    duplicateButton.onclick = (e) => {
+      e.stopPropagation();
+      duplicateQuiz(quiz);
+    };
+
+    historyItem.appendChild(headerDiv);
+    historyItem.appendChild(expandableDiv);
     historyList.appendChild(historyItem);
   });
 }
@@ -1105,96 +1265,102 @@ function loadQuizHistory() {
 function duplicateQuiz(quizData) {
   // Limpar formulário atual
   clearForm();
-  
+
   // Preencher campos básicos
-  document.getElementById("vertical").value = quizData.vertical || '';
-  document.getElementById("domain").value = quizData.domain || '';
-  document.getElementById("withRetention").checked = quizData.withRetention || false;
-  document.getElementById("title").value = quizData.title || '';
-  document.getElementById("nameLabel").value = quizData.nameLabel || '';
-  document.getElementById("emailLabel").value = quizData.emailLabel || '';
-  document.getElementById("buttonText").value = quizData.buttonText || '';
-  document.getElementById("footnote").value = quizData.footnote || '';
-  document.getElementById("primaryColor").value = quizData.primaryColor || '#22C55D';
-  document.getElementById("secondaryColor").value = quizData.secondaryColor || '#16A349';
-  document.getElementById("hoverColor").value = quizData.hoverColor || '#16A349';
-  
+  document.getElementById("vertical").value = quizData.vertical || "";
+  document.getElementById("domain").value = quizData.domain || "";
+  document.getElementById("withRetention").checked =
+    quizData.withRetention || false;
+  document.getElementById("title").value = quizData.title || "";
+  document.getElementById("nameLabel").value = quizData.nameLabel || "";
+  document.getElementById("emailLabel").value = quizData.emailLabel || "";
+  document.getElementById("buttonText").value = quizData.buttonText || "";
+  document.getElementById("footnote").value = quizData.footnote || "";
+  document.getElementById("primaryColor").value =
+    quizData.primaryColor || "#22C55D";
+  document.getElementById("secondaryColor").value =
+    quizData.secondaryColor || "#16A349";
+  document.getElementById("hoverColor").value =
+    quizData.hoverColor || "#16A349";
+
   // Atualizar campos de retenção
   toggleRetentionFields();
-  
+
   // Recriar perguntas e loaders na ordem original
   const questionsContainer = document.getElementById("questionsContainer");
-  questionsContainer.innerHTML = '';
-  
+  questionsContainer.innerHTML = "";
+
   quizData.items.forEach((item) => {
-    if (item.type === 'question') {
+    if (item.type === "question") {
       // Adicionar pergunta
       addQuestion();
-      const questionBlocks = document.querySelectorAll('.question-block');
+      const questionBlocks = document.querySelectorAll(".question-block");
       const lastQuestionBlock = questionBlocks[questionBlocks.length - 1];
-      
+
       // Preencher texto da pergunta
-      const questionInput = lastQuestionBlock.querySelector('.question-input');
+      const questionInput = lastQuestionBlock.querySelector(".question-input");
       questionInput.value = item.question;
-      
+
       // Preencher opções
-      const optionInputs = lastQuestionBlock.querySelectorAll('.option-input');
-      
+      const optionInputs = lastQuestionBlock.querySelectorAll(".option-input");
+
       // Adicionar opções extras se necessário
       for (let i = optionInputs.length; i < item.options.length; i++) {
-        const addButton = lastQuestionBlock.querySelector('button[onclick*="addOption"]');
+        const addButton = lastQuestionBlock.querySelector(
+          'button[onclick*="addOption"]'
+        );
         addOption(addButton);
       }
-      
+
       // Preencher todas as opções
-      const allOptionInputs = lastQuestionBlock.querySelectorAll('.option-input');
+      const allOptionInputs =
+        lastQuestionBlock.querySelectorAll(".option-input");
       item.options.forEach((option, index) => {
         if (allOptionInputs[index]) {
           allOptionInputs[index].value = option;
         }
       });
-      
-    } else if (item.type === 'loader') {
+    } else if (item.type === "loader") {
       // Adicionar loader
       addLoader();
-      const loaderBlocks = document.querySelectorAll('.loader-block');
+      const loaderBlocks = document.querySelectorAll(".loader-block");
       const lastLoaderBlock = loaderBlocks[loaderBlocks.length - 1];
-      
+
       // Preencher texto do loader
-      const loaderInput = lastLoaderBlock.querySelector('.loader-input');
+      const loaderInput = lastLoaderBlock.querySelector(".loader-input");
       loaderInput.value = item.text;
     }
   });
-  
+
   // Atualizar preview
   resetPreview();
   updatePreview();
-  
+
   // Scroll para o topo do formulário
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function clearForm() {
   // Limpar campos básicos
-  document.getElementById("vertical").value = '';
-  document.getElementById("domain").value = '';
+  document.getElementById("vertical").value = "";
+  document.getElementById("domain").value = "";
   document.getElementById("withRetention").checked = true;
-  document.getElementById("title").value = '';
-  document.getElementById("nameLabel").value = '';
-  document.getElementById("emailLabel").value = '';
-  document.getElementById("buttonText").value = '';
-  document.getElementById("footnote").value = '';
-  document.getElementById("primaryColor").value = '#22C55D';
-  document.getElementById("secondaryColor").value = '#16A349';
-  document.getElementById("hoverColor").value = '#16A349';
-  
+  document.getElementById("title").value = "";
+  document.getElementById("nameLabel").value = "";
+  document.getElementById("emailLabel").value = "";
+  document.getElementById("buttonText").value = "";
+  document.getElementById("footnote").value = "";
+  document.getElementById("primaryColor").value = "#22C55D";
+  document.getElementById("secondaryColor").value = "#16A349";
+  document.getElementById("hoverColor").value = "#16A349";
+
   // Limpar perguntas e loaders
-  document.getElementById("questionsContainer").innerHTML = '';
-  
+  document.getElementById("questionsContainer").innerHTML = "";
+
   // Limpar respostas da API
-  document.getElementById("apiResponse").innerHTML = '';
-  document.getElementById("linkResponse").innerHTML = '';
-  
+  document.getElementById("apiResponse").innerHTML = "";
+  document.getElementById("linkResponse").innerHTML = "";
+
   // Resetar preview
   resetPreview();
   updatePreview();
