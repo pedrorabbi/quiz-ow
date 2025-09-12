@@ -6,11 +6,11 @@ async function createHtmlTemplate() {
   const secondaryColor = document.getElementById("secondaryColor").value;
   const hoverColor = document.getElementById("hoverColor").value;
 
-  const adLabel = document.getElementById("adLabel").value;
-  const title = document.getElementById("title").value;
-  const description = document.getElementById("description").value;
-  const buttonText = document.getElementById("buttonText").value;
   const footnote = document.getElementById("footnote").value;
+  const adLabel = footnote; // Usar o mesmo valor do rodapé
+  const title = document.getElementById("title").value;
+  const description = "-";
+  const buttonText = document.getElementById("buttonText").value;
   const greeting = document.getElementById("greeting").value;
 
   // Verificar se é com retenção para incluir name/email labels
@@ -24,7 +24,9 @@ async function createHtmlTemplate() {
 
   // Coleta as perguntas, loaders e opções adicionadas dinamicamente no formulário
   const items = [];
-  const allBlocks = Array.from(document.querySelectorAll(".question-block, .loader-block"));
+  const allBlocks = Array.from(
+    document.querySelectorAll(".question-block, .loader-block")
+  );
 
   allBlocks.forEach((block) => {
     if (block.classList.contains("question-block")) {
@@ -47,10 +49,12 @@ async function createHtmlTemplate() {
   });
 
   // Separar perguntas dos loaders para compatibilidade com a API atual
-  const questions = items.filter(item => item.type === "question").map(item => ({
-    question: item.question,
-    options: item.options
-  }));
+  const questions = items
+    .filter((item) => item.type === "question")
+    .map((item) => ({
+      question: item.question,
+      options: item.options,
+    }));
 
   // Montagem do corpo do request para a API que gera o template HTML
   const htmlTemplate = await fetch("/proxy/template", {
@@ -80,7 +84,7 @@ async function createHtmlTemplate() {
         greeting: greeting,
       },
       questions: questions,
-      loaders: items.filter(item => item.type === "loader"),
+      loaders: items.filter((item) => item.type === "loader"),
     }),
   })
     .then(async (res) => {
@@ -175,9 +179,15 @@ function setupDragAndDrop(element) {
   element.addEventListener("dragend", function (e) {
     this.style.opacity = "";
     // Limpar todos os indicadores
-    document.querySelectorAll(".question-block, .loader-block").forEach((block) => {
-      block.classList.remove("drag-over", "drag-over-top", "drag-over-bottom");
-    });
+    document
+      .querySelectorAll(".question-block, .loader-block")
+      .forEach((block) => {
+        block.classList.remove(
+          "drag-over",
+          "drag-over-top",
+          "drag-over-bottom"
+        );
+      });
     draggedElement = null;
   });
 
@@ -187,15 +197,17 @@ function setupDragAndDrop(element) {
 
     if (this !== draggedElement && draggedElement) {
       // Remover classes de outros elementos
-      document.querySelectorAll(".question-block, .loader-block").forEach((block) => {
-        if (block !== this) {
-          block.classList.remove(
-            "drag-over",
-            "drag-over-top",
-            "drag-over-bottom"
-          );
-        }
-      });
+      document
+        .querySelectorAll(".question-block, .loader-block")
+        .forEach((block) => {
+          if (block !== this) {
+            block.classList.remove(
+              "drag-over",
+              "drag-over-top",
+              "drag-over-bottom"
+            );
+          }
+        });
 
       this.classList.add("drag-over");
 
@@ -250,11 +262,11 @@ function renumberQuestions() {
     // Renumerar baseado na ordem atual no DOM
     const container = document.getElementById("questionsContainer");
     if (!container) return;
-    
+
     const allBlocks = Array.from(container.children);
     let questionIndex = 1;
     let loaderIndex = 1;
-    
+
     allBlocks.forEach((block) => {
       if (block.classList.contains("question-block")) {
         const questionNumber = block.querySelector(".question-number");
@@ -409,8 +421,14 @@ function addOption(button) {
 }
 
 // Função para atualizar o preview em tempo real
-function updatePreview() {
+function updatePreview(showTitleInForm = null) {
   try {
+    // Se não foi especificado, detectar automaticamente se estamos no formulário
+    if (showTitleInForm === null) {
+      const previewForm = document.getElementById("previewForm");
+      showTitleInForm = previewForm && previewForm.style.display === "block";
+    }
+
     // Atualizar cores
     const primaryColor =
       document.getElementById("primaryColor")?.value || "#22C55D";
@@ -425,8 +443,7 @@ function updatePreview() {
     const greeting =
       document.getElementById("greeting")?.value || "Subtítulo do quiz";
     const description =
-      document.getElementById("description")?.value ||
-      "Descrição do formulário";
+      document.getElementById("description")?.value || "-";
     const nameLabel = document.getElementById("nameLabel")?.value || "Seu nome";
     const emailLabel =
       document.getElementById("emailLabel")?.value || "Seu email";
@@ -448,7 +465,8 @@ function updatePreview() {
     }
     if (previewTitle) {
       previewTitle.textContent = title;
-      previewTitle.style.display = "none";
+      // Mostrar título apenas quando estivermos no formulário final
+      previewTitle.style.display = showTitleInForm ? "block" : "none";
     }
     if (previewGreeting) {
       previewGreeting.textContent = greeting;
@@ -467,8 +485,12 @@ function updatePreview() {
     if (nameInput) nameInput.placeholder = nameLabel;
     if (emailInput) emailInput.placeholder = emailLabel;
 
-    // Atualizar perguntas
-    updatePreviewQuestions();
+    // Atualizar perguntas apenas se não estivermos no formulário final
+    const previewForm = document.getElementById("previewForm");
+    const isShowingForm = previewForm && previewForm.style.display === "block";
+    if (!isShowingForm) {
+      updatePreviewQuestions();
+    }
   } catch (error) {
     console.error("Erro ao atualizar preview:", error);
   }
@@ -481,7 +503,7 @@ let currentPreviewStep = 0;
 function updateTopProgressBar(currentQuestionStep, totalSteps) {
   const topProgressFill = document.getElementById("topProgressFill");
   if (!topProgressFill) return;
-  
+
   // Cada step (pergunta ou formulário) representa uma parte igual
   // currentQuestionStep = quantas perguntas já foram respondidas (0, 1, 2, etc.)
   // totalSteps = total de perguntas + 1 formulário
@@ -495,12 +517,16 @@ function updatePreviewQuestions() {
     const questionsContainer = document.getElementById("previewQuestions");
     if (!questionsContainer) return;
 
-    const allBlocks = Array.from(document.querySelectorAll(".question-block, .loader-block"));
-    const questionBlocks = Array.from(document.querySelectorAll(".question-block"));
-    
+    const allBlocks = Array.from(
+      document.querySelectorAll(".question-block, .loader-block")
+    );
+    const questionBlocks = Array.from(
+      document.querySelectorAll(".question-block")
+    );
+
     // Total de steps = perguntas + formulário
     const totalSteps = questionBlocks.length + 1;
-    
+
     // Contar quantas perguntas já foram respondidas (antes do step atual)
     let questionsAnswered = 0;
     for (let i = 0; i < currentPreviewStep; i++) {
@@ -508,7 +534,7 @@ function updatePreviewQuestions() {
         questionsAnswered++;
       }
     }
-    
+
     // Atualizar barra de progresso no topo
     updateTopProgressBar(questionsAnswered, totalSteps);
 
@@ -540,19 +566,23 @@ function updatePreviewQuestions() {
               questionIndex++;
             }
           }
-          
+
           const questionInput = currentBlock.querySelector(".question-input");
           const questionText =
             questionInput?.value || `Pergunta ${questionIndex + 1}`;
           const optionInputs = currentBlock.querySelectorAll(".option-input");
 
           const options = Array.from(optionInputs)
-            .map((input, index) => ({ value: input?.value?.trim() || "", index: index + 1 }))
+            .map((input, index) => ({
+              value: input?.value?.trim() || "",
+              index: index + 1,
+            }))
             .filter((option) => option.value !== "")
             .map((option) => option.value);
 
           // Garantir pelo menos 2 opções para o preview
-          const displayOptions = options.length > 0 ? options : ["Opção 1", "Opção 2"];
+          const displayOptions =
+            options.length > 0 ? options : ["Opção 1", "Opção 2"];
 
           const questionDiv = createPreviewQuestion(
             questionText,
@@ -564,8 +594,10 @@ function updatePreviewQuestions() {
         } else if (currentBlock.classList.contains("loader-block")) {
           // É um loader - não conta como step
           const loaderInput = currentBlock.querySelector(".loader-input");
-          const loaderText = loaderInput?.value || "WIR SUCHEN DIE BESTEN KREDITOPTIONEN FÜR SIE ...";
-          
+          const loaderText =
+            loaderInput?.value ||
+            "WIR SUCHEN DIE BESTEN KREDITOPTIONEN FÜR SIE ...";
+
           const loaderDiv = createPreviewLoader(loaderText);
           questionsContainer.appendChild(loaderDiv);
         }
@@ -610,7 +642,9 @@ function createPreviewQuestion(questionText, options, stepIndex, totalSteps) {
 
       // Adicionar evento de click para avançar para próximo step
       optionButton.addEventListener("click", () => {
-        const allBlocks = Array.from(document.querySelectorAll(".question-block, .loader-block"));
+        const allBlocks = Array.from(
+          document.querySelectorAll(".question-block, .loader-block")
+        );
         if (currentPreviewStep < allBlocks.length - 1) {
           currentPreviewStep++;
           updatePreviewQuestions();
@@ -623,6 +657,8 @@ function createPreviewQuestion(questionText, options, stepIndex, totalSteps) {
           const totalSteps = questionBlocks.length + 1;
           // Todas as perguntas foram respondidas, estamos no formulário
           updateTopProgressBar(questionBlocks.length, totalSteps);
+          // Mostrar título no formulário final
+          updatePreview(true);
         }
       });
 
@@ -681,7 +717,9 @@ function createPreviewLoader(loaderText) {
 
   // Avançar automaticamente após 2 segundos
   setTimeout(() => {
-    const allBlocks = Array.from(document.querySelectorAll(".question-block, .loader-block"));
+    const allBlocks = Array.from(
+      document.querySelectorAll(".question-block, .loader-block")
+    );
     if (currentPreviewStep < allBlocks.length - 1) {
       currentPreviewStep++;
       updatePreviewQuestions();
@@ -694,6 +732,8 @@ function createPreviewLoader(loaderText) {
       const totalSteps = questionBlocks.length + 1;
       // Todas as perguntas foram respondidas, estamos no formulário
       updateTopProgressBar(questionBlocks.length, totalSteps);
+      // Mostrar título no formulário final
+      updatePreview(true);
     }
   }, 2000);
 
@@ -706,6 +746,8 @@ function resetPreview() {
   document.getElementById("previewQuestions").style.display = "block";
   document.getElementById("previewForm").style.display = "none";
   updatePreviewQuestions();
+  // Garantir que o título fique oculto no início
+  updatePreview(false);
 }
 
 // Função para atualizar cores do preview
@@ -728,10 +770,12 @@ function updatePreviewColors() {
     // Adicionar novos eventos de hover
     option.onmouseenter = function () {
       this.style.backgroundColor = hoverColor;
+      this.style.color = "white";
     };
 
     option.onmouseleave = function () {
       this.style.backgroundColor = secondaryColor;
+      this.style.color = "white";
     };
   });
 }
@@ -770,14 +814,18 @@ document.addEventListener("DOMContentLoaded", function () {
   );
   formInputs.forEach((input) => {
     input.addEventListener("input", () => {
+      // Só resetar o preview para inputs que afetam a estrutura das perguntas
       if (
         input.classList.contains("question-input") ||
         input.classList.contains("option-input") ||
         input.classList.contains("loader-input")
       ) {
         resetPreview();
+        updatePreview();
+      } else {
+        // Para outros campos (título, descrição, etc.), apenas atualizar sem resetar
+        updatePreview();
       }
-      updatePreview();
     });
   });
 
@@ -790,7 +838,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Configurar drag and drop para blocos já existentes
-  const existingBlocks = document.querySelectorAll(".question-block, .loader-block");
+  const existingBlocks = document.querySelectorAll(
+    ".question-block, .loader-block"
+  );
   existingBlocks.forEach(setupDragAndDrop);
 
   // Configurar o container para aceitar drops
@@ -826,9 +876,15 @@ document.addEventListener("DOMContentLoaded", function () {
     questionsContainer.addEventListener("dragleave", function (e) {
       // Limpar indicadores quando sair do container
       if (!questionsContainer.contains(e.relatedTarget)) {
-        document.querySelectorAll(".question-block, .loader-block").forEach((block) => {
-          block.classList.remove("drag-over", "drag-over-top", "drag-over-bottom");
-        });
+        document
+          .querySelectorAll(".question-block, .loader-block")
+          .forEach((block) => {
+            block.classList.remove(
+              "drag-over",
+              "drag-over-top",
+              "drag-over-bottom"
+            );
+          });
       }
     });
   }

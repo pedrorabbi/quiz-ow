@@ -50,8 +50,8 @@
             >
           </div>
 
-          <!-- Campo para label do anúncio -->
-          <div class="floating-label-group">
+          <!-- Campo para label do anúncio (oculto) -->
+          <div class="floating-label-group" style="display: none">
             <input type="text" id="adLabel" placeholder=" " />
             <label for="adLabel">Ad Label</label>
           </div>
@@ -62,14 +62,14 @@
             <label for="title">Título</label>
           </div>
 
-          <!-- Campo para subtítulo/greeting do quiz -->
-          <div class="floating-label-group">
+          <!-- Campo para subtítulo/greeting do quiz (oculto) -->
+          <div class="floating-label-group" style="display: none">
             <input type="text" id="greeting" placeholder=" " />
             <label for="greeting">Subtítulo/Greeting</label>
           </div>
 
-          <!-- Campo para descrição do quiz -->
-          <div class="floating-label-group">
+          <!-- Campo para descrição do quiz (oculto) -->
+          <div class="floating-label-group" style="display: none">
             <input type="text" id="description" placeholder=" " />
             <label for="description">Descrição</label>
           </div>
@@ -92,7 +92,7 @@
           <!-- Campo para texto do botão -->
           <div class="floating-label-group">
             <input type="text" id="buttonText" placeholder=" " />
-            <label for="buttonText">Texto do botão</label>
+            <label for="buttonText">Texto do botão final</label>
           </div>
 
           <!-- Campo para rodapé -->
@@ -227,11 +227,19 @@
             >
               <div
                 id="previewAdLabel"
-                style="font-size: 12px; color: #666; margin-bottom: 5px; display: none"
+                style="
+                  font-size: 12px;
+                  color: #666;
+                  margin-bottom: 5px;
+                  display: none;
+                "
               >
                 Ad Label
               </div>
-              <h3 id="previewTitle" style="margin: 0 0 10px 0; color: #333; display: none">
+              <h3
+                id="previewTitle"
+                style="margin: 0 0 10px 0; color: #333; display: none"
+              >
                 Título do Quiz
               </h3>
               <p
@@ -285,7 +293,7 @@
             <div id="previewForm" style="margin-top: 30px; display: none">
               <h4
                 id="previewDescription"
-                style="margin: 0 0 20px 0; color: #333"
+                style="margin: 0 0 20px 0; color: #333; display: none"
               >
                 Descrição do formulário
               </h4>
