@@ -96,6 +96,10 @@ button[onclick="addQuestion()"] {
   background-color: #2563eb;
 }
 
+button[onclick="addLoader()"] {
+  background-color: #2563eb;
+}
+
 button[onclick="createHtmlTemplate()"] {
   background-color: #1baa50;
 }
