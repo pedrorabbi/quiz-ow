@@ -163,31 +163,31 @@ function createLink(htmlTemplate) {
 // Variáveis para controle do drag and drop
 let draggedElement = null;
 
-// Função para configurar drag and drop em um elemento de pergunta
-function setupDragAndDrop(questionElement) {
-  questionElement.addEventListener("dragstart", function (e) {
+// Função para configurar drag and drop em um elemento (pergunta ou loader)
+function setupDragAndDrop(element) {
+  element.addEventListener("dragstart", function (e) {
     draggedElement = this;
     this.style.opacity = "0.5";
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/html", this.outerHTML);
   });
 
-  questionElement.addEventListener("dragend", function (e) {
+  element.addEventListener("dragend", function (e) {
     this.style.opacity = "";
     // Limpar todos os indicadores
-    document.querySelectorAll(".question-block").forEach((block) => {
+    document.querySelectorAll(".question-block, .loader-block").forEach((block) => {
       block.classList.remove("drag-over", "drag-over-top", "drag-over-bottom");
     });
     draggedElement = null;
   });
 
-  questionElement.addEventListener("dragover", function (e) {
+  element.addEventListener("dragover", function (e) {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
 
-    if (this !== draggedElement) {
+    if (this !== draggedElement && draggedElement) {
       // Remover classes de outros elementos
-      document.querySelectorAll(".question-block").forEach((block) => {
+      document.querySelectorAll(".question-block, .loader-block").forEach((block) => {
         if (block !== this) {
           block.classList.remove(
             "drag-over",
@@ -212,27 +212,31 @@ function setupDragAndDrop(questionElement) {
     }
   });
 
-  questionElement.addEventListener("drop", function (e) {
+  element.addEventListener("drop", function (e) {
     e.preventDefault();
 
-    if (this !== draggedElement) {
+    if (this !== draggedElement && draggedElement) {
       const container = document.getElementById("questionsContainer");
       const rect = this.getBoundingClientRect();
       const midpoint = rect.top + rect.height / 2;
 
-      // Inserir na posição correta
-      if (e.clientY < midpoint) {
-        container.insertBefore(draggedElement, this);
-      } else {
-        container.insertBefore(draggedElement, this.nextSibling);
-      }
+      try {
+        // Inserir na posição correta
+        if (e.clientY < midpoint) {
+          container.insertBefore(draggedElement, this);
+        } else {
+          container.insertBefore(draggedElement, this.nextSibling);
+        }
 
-      // Renumerar e atualizar
-      setTimeout(() => {
-        renumberQuestions();
-        resetPreview();
-        updatePreview();
-      }, 50);
+        // Renumerar e atualizar com delay maior para estabilidade
+        setTimeout(() => {
+          renumberQuestions();
+          resetPreview();
+          updatePreview();
+        }, 100);
+      } catch (error) {
+        console.error("Erro durante reordenação:", error);
+      }
     }
 
     // Limpar classes
@@ -242,29 +246,33 @@ function setupDragAndDrop(questionElement) {
 
 // Função para renumerar as perguntas e loaders após reordenação
 function renumberQuestions() {
-  const questionBlocks = document.querySelectorAll(".question-block");
-  const loaderBlocks = document.querySelectorAll(".loader-block");
-  
-  let questionIndex = 1;
-  let loaderIndex = 1;
-  
-  // Renumerar perguntas
-  questionBlocks.forEach((block) => {
-    const questionNumber = block.querySelector(".question-number");
-    if (questionNumber) {
-      questionNumber.textContent = `Pergunta ${questionIndex}`;
-      questionIndex++;
-    }
-  });
-  
-  // Renumerar loaders
-  loaderBlocks.forEach((block) => {
-    const loaderLabel = block.querySelector(".loader-label");
-    if (loaderLabel) {
-      loaderLabel.textContent = `Loader ${loaderIndex}`;
-      loaderIndex++;
-    }
-  });
+  try {
+    // Renumerar baseado na ordem atual no DOM
+    const container = document.getElementById("questionsContainer");
+    if (!container) return;
+    
+    const allBlocks = Array.from(container.children);
+    let questionIndex = 1;
+    let loaderIndex = 1;
+    
+    allBlocks.forEach((block) => {
+      if (block.classList.contains("question-block")) {
+        const questionNumber = block.querySelector(".question-number");
+        if (questionNumber) {
+          questionNumber.textContent = `Pergunta ${questionIndex}`;
+          questionIndex++;
+        }
+      } else if (block.classList.contains("loader-block")) {
+        const loaderLabel = block.querySelector(".loader-label");
+        if (loaderLabel) {
+          loaderLabel.textContent = `Loader ${loaderIndex}`;
+          loaderIndex++;
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Erro ao renumerar blocos:", error);
+  }
 }
 
 // Função auxiliar para adicionar um loader ao formulário
@@ -461,21 +469,14 @@ function updatePreview() {
 let currentPreviewStep = 0;
 
 // Função para atualizar a barra de progresso no topo
-function updateTopProgressBar(currentStep, totalSteps) {
+function updateTopProgressBar(currentQuestionStep, totalSteps) {
   const topProgressFill = document.getElementById("topProgressFill");
   if (!topProgressFill) return;
   
-  // Contar quantas perguntas já foram respondidas
-  const allBlocks = Array.from(document.querySelectorAll(".question-block, .loader-block"));
-  let questionsAnswered = 0;
-  
-  for (let i = 0; i < currentStep; i++) {
-    if (allBlocks[i] && allBlocks[i].classList.contains("question-block")) {
-      questionsAnswered++;
-    }
-  }
-  
-  const progress = (questionsAnswered / (totalSteps - 1)) * 100;
+  // Cada step (pergunta ou formulário) representa uma parte igual
+  // currentQuestionStep = quantas perguntas já foram respondidas (0, 1, 2, etc.)
+  // totalSteps = total de perguntas + 1 formulário
+  const progress = (currentQuestionStep / totalSteps) * 100;
   topProgressFill.style.width = `${progress}%`;
 }
 
@@ -491,8 +492,16 @@ function updatePreviewQuestions() {
     // Total de steps = perguntas + formulário
     const totalSteps = questionBlocks.length + 1;
     
+    // Contar quantas perguntas já foram respondidas (antes do step atual)
+    let questionsAnswered = 0;
+    for (let i = 0; i < currentPreviewStep; i++) {
+      if (allBlocks[i] && allBlocks[i].classList.contains("question-block")) {
+        questionsAnswered++;
+      }
+    }
+    
     // Atualizar barra de progresso no topo
-    updateTopProgressBar(currentPreviewStep, totalSteps);
+    updateTopProgressBar(questionsAnswered, totalSteps);
 
     // Limpar conteúdo existente no preview
     questionsContainer.innerHTML = "";
@@ -503,7 +512,7 @@ function updatePreviewQuestions() {
         "Pergunta de exemplo",
         ["Opção 1", "Opção 2"],
         0,
-        1
+        2 // 1 pergunta + 1 formulário
       );
       questionsContainer.appendChild(questionDiv);
     } else {
@@ -600,11 +609,11 @@ function createPreviewQuestion(questionText, options, stepIndex, totalSteps) {
           // Última pergunta - mostrar formulário
           document.getElementById("previewQuestions").style.display = "none";
           document.getElementById("previewForm").style.display = "block";
-          // Atualizar progress bar para mostrar que estamos no formulário (não 100% ainda)
+          // Atualizar progress bar para mostrar que estamos no formulário
           const questionBlocks = document.querySelectorAll(".question-block");
           const totalSteps = questionBlocks.length + 1;
-          const progress = (questionBlocks.length / totalSteps) * 100; // Perguntas respondidas / total
-          document.getElementById("topProgressFill").style.width = `${progress}%`;
+          // Todas as perguntas foram respondidas, estamos no formulário
+          updateTopProgressBar(questionBlocks.length, totalSteps);
         }
       });
 
@@ -671,11 +680,11 @@ function createPreviewLoader(loaderText) {
       // Última step - mostrar formulário
       document.getElementById("previewQuestions").style.display = "none";
       document.getElementById("previewForm").style.display = "block";
-      // Atualizar progress bar para mostrar que estamos no formulário (não 100% ainda)
+      // Atualizar progress bar para mostrar que estamos no formulário
       const questionBlocks = document.querySelectorAll(".question-block");
       const totalSteps = questionBlocks.length + 1;
-      const progress = (questionBlocks.length / totalSteps) * 100; // Perguntas respondidas / total
-      document.getElementById("topProgressFill").style.width = `${progress}%`;
+      // Todas as perguntas foram respondidas, estamos no formulário
+      updateTopProgressBar(questionBlocks.length, totalSteps);
     }
   }, 2000);
 
@@ -771,27 +780,46 @@ document.addEventListener("DOMContentLoaded", function () {
     toggleRetentionFields();
   }
 
-  // Configurar drag and drop para perguntas já existentes
-  const existingQuestions = document.querySelectorAll(".question-block");
-  existingQuestions.forEach(setupDragAndDrop);
+  // Configurar drag and drop para blocos já existentes
+  const existingBlocks = document.querySelectorAll(".question-block, .loader-block");
+  existingBlocks.forEach(setupDragAndDrop);
 
   // Configurar o container para aceitar drops
   const questionsContainer = document.getElementById("questionsContainer");
   if (questionsContainer) {
     questionsContainer.addEventListener("dragover", function (e) {
       e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
     });
 
     questionsContainer.addEventListener("drop", function (e) {
       e.preventDefault();
       // Se soltar em área vazia, adicionar no final
       if (e.target === this && draggedElement) {
-        this.appendChild(draggedElement);
-        setTimeout(() => {
-          renumberQuestions();
-          resetPreview();
-          updatePreview();
-        }, 50);
+        try {
+          this.appendChild(draggedElement);
+          setTimeout(() => {
+            renumberQuestions();
+            resetPreview();
+            updatePreview();
+          }, 100);
+        } catch (error) {
+          console.error("Erro ao soltar no container:", error);
+        }
+      }
+    });
+
+    // Adicionar eventos para prevenir comportamento padrão
+    questionsContainer.addEventListener("dragenter", function (e) {
+      e.preventDefault();
+    });
+
+    questionsContainer.addEventListener("dragleave", function (e) {
+      // Limpar indicadores quando sair do container
+      if (!questionsContainer.contains(e.relatedTarget)) {
+        document.querySelectorAll(".question-block, .loader-block").forEach((block) => {
+          block.classList.remove("drag-over", "drag-over-top", "drag-over-bottom");
+        });
       }
     });
   }
@@ -801,7 +829,10 @@ document.addEventListener("DOMContentLoaded", function () {
   if (previewButton) {
     previewButton.addEventListener("click", () => {
       // Completar barra de progresso quando enviar formulário
-      document.getElementById("topProgressFill").style.width = "100%";
+      const questionBlocks = document.querySelectorAll(".question-block");
+      const totalSteps = questionBlocks.length + 1;
+      // Formulário enviado = todos os steps completados
+      updateTopProgressBar(totalSteps, totalSteps);
     });
   }
 

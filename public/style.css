@@ -122,6 +122,8 @@ button:hover {
   flex-direction: column;
   gap: 8px;
   background-color: #f4f4f4;
+  min-height: 120px;
+  box-sizing: border-box;
 }
 
 .loader-block {
@@ -133,6 +135,8 @@ button:hover {
   gap: 8px;
   background-color: #e8f5e8;
   position: relative;
+  min-height: 80px;
+  box-sizing: border-box;
 }
 .options-container {
   display: flex;
@@ -190,6 +194,8 @@ h2 {
 
 .question-block, .loader-block {
   position: relative;
+  width: 100%;
+  flex-shrink: 0;
 }
 
 .question-block:hover .drag-handle, .loader-block:hover .drag-handle {
@@ -197,23 +203,34 @@ h2 {
 }
 
 .question-block.drag-over, .loader-block.drag-over {
-  transform: scale(0.95);
+  transform: scale(0.98);
+  transition: transform 0.2s ease;
 }
 
 .question-block.drag-over-top, .loader-block.drag-over-top {
   border-top: 3px solid #22C55D;
+  margin-top: 3px;
 }
 
 .question-block.drag-over-bottom, .loader-block.drag-over-bottom {
   border-bottom: 3px solid #22C55D;
+  margin-bottom: 3px;
 }
 
 .question-block[draggable="true"], .loader-block[draggable="true"] {
   cursor: move;
+  user-select: none;
 }
 
 .question-block[draggable="true"]:hover, .loader-block[draggable="true"]:hover {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
+
+/* Garantir que o container mantenha layout consistente */
+#questionsContainer {
+  min-height: 50px;
 }
 
 .question-number {
