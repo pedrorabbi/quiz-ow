@@ -81,54 +81,37 @@
       </div>
     </div>
 
-    <div style="display: flex; gap: 20px; max-width: 1200px; margin: 0 auto">
+    <div class="main-container">
       <!-- Lado esquerdo: Formulário -->
-      <div style="flex: 1; max-width: 500px">
+      <div class="form-section">
         <h1>Criação de Quiz com Offer Wall</h1>
 
         <!-- Dropdown de tradução no topo -->
         <div
           id="translationSection"
-          style="
-            margin-bottom: 20px;
-            padding: 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            background: #f8f9fa;
-          "
+          class="translation-section"
         >
-          <div style="display: flex; align-items: center; gap: 12px">
-            <span style="font-weight: 500; color: #333; white-space: nowrap">
+          <div class="translation-controls">
+            <span class="translation-label">
               Traduzir campos <b>preenchidos</b>:
             </span>
             <select
               id="liveTranslateSelect"
-              style="
-                flex: 1;
-                padding: 8px 12px;
-                border: 1px solid #ddd;
-                border-radius: 6px;
-                background: white;
-              "
+              class="translation-select"
             >
               <option value="">Selecione um idioma</option>
             </select>
             <div
               id="liveTranslateStatus"
-              style="
-                font-size: 12px;
-                color: #666;
-                min-width: 120px;
-                text-align: right;
-              "
+              class="translation-status"
             ></div>
           </div>
         </div>
 
         <!-- Container principal do formulário do quiz -->
-        <div style="display: flex; flex-direction: column; gap: 10px">
+        <div class="form-container">
           <!-- Campo para nome do quiz (oculto) -->
-          <div class="floating-label-group" style="display: none">
+          <div class="floating-label-group hidden-field">
             <input type="text" id="quizName" placeholder=" " />
             <label for="quizName">Nome do Quiz</label>
           </div>
@@ -148,22 +131,15 @@
           <hr />
 
           <!-- Checkbox para controlar retenção -->
-          <div
-            style="
-              display: flex;
-              align-items: center;
-              gap: 8px;
-              margin: 5px 0 10px 0;
-            "
-          >
+          <div class="retention-checkbox">
             <input type="checkbox" id="withRetention" checked />
-            <label for="withRetention" style="margin: 0; cursor: pointer"
+            <label for="withRetention" class="retention-label"
               >Com retenção</label
             >
           </div>
 
           <!-- Campo para label do anúncio (oculto) -->
-          <div class="floating-label-group" style="display: none">
+          <div class="floating-label-group hidden-field">
             <input type="text" id="adLabel" placeholder=" " />
             <label for="adLabel">Ad Label</label>
           </div>
@@ -175,19 +151,19 @@
           </div>
 
           <!-- Campo para subtítulo/greeting do quiz (oculto) -->
-          <div class="floating-label-group" style="display: none">
+          <div class="floating-label-group hidden-field">
             <input type="text" id="greeting" placeholder=" " />
             <label for="greeting">Subtítulo/Greeting</label>
           </div>
 
           <!-- Campo para descrição do quiz (oculto) -->
-          <div class="floating-label-group" style="display: none">
+          <div class="floating-label-group hidden-field">
             <input type="text" id="description" placeholder=" " />
             <label for="description">Descrição</label>
           </div>
 
           <!-- Campos de retenção (nome e email) -->
-          <div id="retentionFields" style="flex-direction: column; gap: 10px">
+          <div id="retentionFields" class="retention-fields-container">
             <!-- Campo para label do nome -->
             <div class="floating-label-group">
               <input type="text" id="nameLabel" placeholder=" " />
@@ -240,14 +216,14 @@
           <!-- Container onde as perguntas do quiz serão adicionadas dinamicamente -->
           <div
             id="questionsContainer"
-            style="display: flex; flex-direction: column; gap: 20px"
+            class="questions-container"
           >
             <!-- Perguntas serão adicionadas aqui -->
           </div>
 
           <!-- Botões para adicionar perguntas, loader e criar o quiz -->
-          <div style="display: flex; flex-direction: column; gap: 10px">
-            <div style="display: flex; gap: 10px">
+          <div class="action-buttons">
+            <div class="button-row">
               <button onclick="addQuestion()">Adicionar Pergunta</button>
               <button onclick="addLoader()">Adicionar Loader</button>
             </div>
@@ -258,145 +234,79 @@
         <!-- Área para exibir resposta da API após submissão -->
         <div
           id="apiResponse"
-          style="display: flex; justify-content: center; margin-top: 10px"
+          class="api-response"
         ></div>
 
         <!-- Área para exibir link gerado após criação do template -->
         <div
           id="linkResponse"
-          style="
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            margin-top: 10px;
-            text-align: center;
-          "
+          class="link-response"
         ></div>
       </div>
 
       <!-- Lado direito: Preview -->
-      <div style="flex: 1; position: sticky; top: 20px; height: fit-content">
-        <div
-          style="
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            margin-bottom: 15px;
-          "
-        >
+      <div class="preview-section">
+        <div class="preview-header-controls">
           <button
             onclick="resetPreview()"
-            style="
-              padding: 6px 12px;
-              background: white;
-              color: #666;
-              border: 1px solid #ddd;
-              border-radius: 4px;
-              font-size: 12px;
-              cursor: pointer;
-              width: fit-content;
-              flex: 0;
-              white-space: nowrap;
-            "
+            class="reset-button"
           >
             Reset Preview
           </button>
         </div>
         <div
           id="quizPreview"
-          style="
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            margin-bottom: 20px;
-          "
+          class="quiz-preview-container"
         >
           <!-- Barra de progresso fixa no topo -->
           <div
             id="topProgressBar"
-            style="
-              width: 100%;
-              height: 4px;
-              background-color: #e0e0e0;
-              position: relative;
-            "
+            class="top-progress-bar"
           >
             <div
               id="topProgressFill"
-              style="
-                height: 100%;
-                background-color: #22c55d;
-                width: 0%;
-                transition: width 0.3s ease;
-              "
+              class="progress-fill"
             ></div>
           </div>
 
-          <div id="previewContent" style="padding: 20px">
+          <div id="previewContent" class="preview-content">
             <div
               id="previewHeader"
-              style="text-align: center; margin-bottom: 20px"
+              class="preview-header-centered"
             >
               <div
                 id="previewAdLabel"
-                style="
-                  font-size: 12px;
-                  color: #666;
-                  margin-bottom: 5px;
-                  display: none;
-                "
+                class="preview-ad-label-styled"
               >
                 Ad Label
               </div>
               <h3
                 id="previewTitle"
-                style="margin: 0 0 10px 0; color: #333; display: none"
+                class="preview-title-hidden"
               >
                 Título do Quiz
               </h3>
               <p
                 id="previewGreeting"
-                style="margin: 0; color: #666; font-size: 14px; display: none"
+                class="preview-greeting-hidden"
               >
                 Subtítulo do quiz
               </p>
             </div>
 
             <div id="previewQuestions">
-              <div class="preview-question" style="margin-bottom: 20px">
-                <h4 style="margin: 0 0 15px 0; color: #333">
+              <div class="preview-question preview-question-item">
+                <h4 class="preview-question-header">
                   Pergunta de exemplo
                 </h4>
                 <div class="preview-options">
                   <button
-                    class="preview-option"
-                    style="
-                      display: block;
-                      width: 100%;
-                      padding: 12px;
-                      margin: 8px 0;
-                      border: none;
-                      border-radius: 6px;
-                      cursor: pointer;
-                      font-size: 14px;
-                    "
+                    class="preview-option preview-option-styled"
                   >
                     Opção 1
                   </button>
                   <button
-                    class="preview-option"
-                    style="
-                      display: block;
-                      width: 100%;
-                      padding: 12px;
-                      margin: 8px 0;
-                      border: none;
-                      border-radius: 6px;
-                      cursor: pointer;
-                      font-size: 14px;
-                    "
+                    class="preview-option preview-option-styled"
                   >
                     Opção 2
                   </button>
@@ -404,64 +314,38 @@
               </div>
             </div>
 
-            <div id="previewForm" style="margin-top: 20px; display: none">
+            <div id="previewForm" class="preview-form-hidden">
               <h4
                 id="previewDescription"
-                style="margin: 0 0 20px 0; color: #333; display: none"
+                class="preview-description-hidden"
               >
                 Descrição do formulário
               </h4>
-              <div id="previewNameInputContainer" style="margin-bottom: 12px">
+              <div id="previewNameInputContainer" class="preview-input-container-styled">
                 <input
                   id="previewNameInput"
                   type="text"
                   placeholder="Seu nome"
-                  style="
-                    width: 100%;
-                    padding: 12px;
-                    border: 1px solid #ddd;
-                    border-radius: 6px;
-                    box-sizing: border-box;
-                  "
+                  class="preview-input-styled"
                 />
               </div>
-              <div id="previewEmailInputContainer" style="margin-bottom: 12px">
+              <div id="previewEmailInputContainer" class="preview-input-container-styled">
                 <input
                   id="previewEmailInput"
                   type="email"
                   placeholder="Seu email"
-                  style="
-                    width: 100%;
-                    padding: 12px;
-                    border: 1px solid #ddd;
-                    border-radius: 6px;
-                    box-sizing: border-box;
-                  "
+                  class="preview-input-styled"
                 />
               </div>
               <button
                 id="previewButton"
-                style="
-                  width: 100%;
-                  padding: 15px;
-                  border: none;
-                  border-radius: 6px;
-                  font-size: 16px;
-                  font-weight: bold;
-                  cursor: pointer;
-                  color: white;
-                "
+                class="preview-button-styled"
               >
                 Enviar
               </button>
               <p
                 id="previewFootnote"
-                style="
-                  font-size: 12px;
-                  color: #666;
-                  text-align: center;
-                  margin-top: 20px;
-                "
+                class="preview-footnote-styled"
               >
                 Rodapé do formulário
               </p>
@@ -472,31 +356,20 @@
         <!-- Histórico de Quizzes -->
         <div
           id="quizHistory"
-          style="
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            padding: 15px;
-          "
+          class="quiz-history"
         >
-          <h3 style="margin: 0 0 15px 0; font-size: 16px; color: #333">
+          <h3 class="history-title-styled">
             Histórico
           </h3>
           <div
             id="historyList"
-            style="display: flex; flex-direction: column; gap: 10px"
+            class="history-list-container"
           >
             <!-- Histórico será preenchido aqui -->
           </div>
           <div
             id="noHistory"
-            style="
-              color: #666;
-              font-size: 14px;
-              text-align: center;
-              padding: 20px;
-            "
+            class="no-history-container"
           >
             Nenhum quiz criado ainda
           </div>

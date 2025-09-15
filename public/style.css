@@ -418,3 +418,439 @@ h2 {
 .close-button:hover {
   background: #4b5563;
 }
+
+/* Classes para substituir estilos inline */
+
+/* Layout principal */
+.main-container {
+  display: flex;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.form-section {
+  flex: 1;
+  max-width: 500px;
+}
+
+.preview-section {
+  flex: 1;
+  position: sticky;
+  top: 20px;
+  height: fit-content;
+}
+
+/* Seção de tradução */
+.translation-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.translation-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.translation-label {
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+}
+
+.translation-select {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+}
+
+.translation-status {
+  font-size: 12px;
+  color: #666;
+  min-width: 120px;
+  text-align: right;
+}
+
+/* Container do formulário */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Campo oculto */
+.hidden-field {
+  display: none;
+}
+
+/* Checkbox de retenção */
+.retention-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 5px 0 10px 0;
+}
+
+.retention-label {
+  margin: 0;
+  cursor: pointer;
+}
+
+/* Campos de retenção */
+.retention-fields {
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Container de perguntas */
+.questions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Botões de ação */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.button-row {
+  display: flex;
+  gap: 10px;
+}
+
+/* Respostas da API */
+.api-response {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.link-response {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  text-align: center;
+  word-break: break-all;
+}
+
+/* Preview */
+.preview-header-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.reset-button {
+  padding: 6px 12px;
+  background: white;
+  color: #666;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  width: fit-content;
+  flex: 0;
+  white-space: nowrap;
+}
+
+.quiz-preview {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: #e0e0e0;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #22c55d;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.preview-content {
+  padding: 20px;
+}
+
+.preview-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.preview-ad-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.preview-title {
+  margin: 0 0 10px 0;
+  color: #333;
+  display: none;
+}
+
+.preview-greeting {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+  display: none;
+}
+
+.preview-question-item {
+  margin-bottom: 20px;
+}
+
+.preview-question-title {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.preview-option-button {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.preview-form {
+  margin-top: 20px;
+  display: none;
+}
+
+.preview-description {
+  margin: 0 0 20px 0;
+  color: #333;
+  display: none;
+}
+
+.preview-input-container {
+  margin-bottom: 12px;
+}
+
+.preview-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.preview-submit-button {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 6px;
+  background: #16a34a;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.preview-footnote {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* Histórico */
+.quiz-history {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+  padding: 15px;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.history-title {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.no-history {
+  color: #666;
+  font-size: 14px;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* Classes adicionais para elementos específicos */
+
+/* Campos de retenção - corrigindo estilo inline */
+.retention-fields-container {
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Elementos do preview com múltiplas propriedades */
+.preview-header-centered {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.preview-title-hidden {
+  margin: 0 0 10px 0;
+  color: #333;
+  display: none;
+}
+
+.preview-greeting-hidden {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+  display: none;
+}
+
+.preview-question-header {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.preview-form-hidden {
+  margin-top: 20px;
+  display: none;
+}
+
+.preview-description-hidden {
+  margin: 0 0 20px 0;
+  color: #333;
+  display: none;
+}
+
+/* Estilo para título do histórico */
+.history-title-styled {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.history-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Estilos adicionais para elementos com múltiplas propriedades */
+
+/* Preview do quiz - container principal */
+.quiz-preview-container {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+/* Barra de progresso do topo */
+.top-progress-bar {
+  width: 100%;
+  height: 4px;
+  background-color: #e0e0e0;
+  position: relative;
+}
+
+/* Label do anúncio no preview */
+.preview-ad-label-styled {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 5px;
+  display: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Botão principal do preview */
+.preview-button-styled {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  color: white;
+}
+
+/* Rodapé do preview */
+.preview-footnote-styled {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  margin-top: 10px;
+  padding: 0;
+}
+
+/* Opções do preview com estilos específicos */
+.preview-option-styled {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+/* Container de inputs do preview */
+.preview-input-container-styled {
+  margin-bottom: 12px;
+}
+
+/* Inputs do preview */
+.preview-input-styled {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* Container do histórico "sem histórico" */
+.no-history-container {
+  color: #666;
+  font-size: 14px;
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+}
