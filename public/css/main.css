@@ -132,6 +132,13 @@ button[onclick^="addOption"] {
   display: block;
 }
 
+.error-icon {
+  font-size: 48px;
+  color: #ef4444;
+  margin-bottom: 12px;
+  display: block;
+}
+
 .modal-header h2 {
   margin: 0;
   color: #1f2937;
@@ -145,7 +152,7 @@ button[onclick^="addOption"] {
 }
 
 .modal-body p {
-  margin: 0 0 20px 0;
+  margin: 0;
   color: #6b7280;
   line-height: 1.5;
 }
@@ -153,6 +160,7 @@ button[onclick^="addOption"] {
 .code-actions {
   display: flex;
   justify-content: center;
+  margin-top: 20px;
 }
 
 .copy-button {

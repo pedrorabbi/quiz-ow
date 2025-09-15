@@ -21,6 +21,7 @@
     <script src="./js/quiz-history.js"></script>
     <script src="./js/translation.js"></script>
     <script src="./js/success-modal.js"></script>
+    <script src="./js/error-modal.js"></script>
     <script src="./js/form-management.js"></script>
     <script src="./js/main.js"></script>
   </head>
@@ -57,6 +58,26 @@
         </div>
         <div class="modal-footer">
           <button id="close-modal-btn" class="close-button">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de erro -->
+    <div id="error-modal" class="modal-overlay" style="display: none">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="material-symbols-rounded error-icon">error</span>
+          <h2>Erro na criação do quiz</h2>
+        </div>
+        <div class="modal-body">
+          <p id="error-message">
+            Ocorreu um erro durante a criação do quiz. Tente novamente.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button id="close-error-modal-btn" class="close-button">
+            Fechar
+          </button>
         </div>
       </div>
     </div>

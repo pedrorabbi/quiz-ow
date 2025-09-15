@@ -32,10 +32,10 @@ async function createHtmlTemplate() {
     const withRetention = document.getElementById("withRetention").checked;
     const nameLabel = withRetention
       ? document.getElementById("nameLabel").value
-      : "";
+      : "-";
     const emailLabel = withRetention
       ? document.getElementById("emailLabel").value
-      : "";
+      : "-";
 
     // Coleta as perguntas, loaders e opções adicionadas dinamicamente no formulário
     const items = [];
@@ -106,12 +106,14 @@ async function createHtmlTemplate() {
         // Tratamento da resposta da API
         const json = await res.json();
         console.log(json);
-        const apiResponse = document.getElementById("apiResponse");
 
         if (json.error) {
-          // Exibe erro na interface, formatando quebras de linha
-          apiResponse.innerHTML = `❌ Erro: ${json.error.replace(/\n/g, "<br>")}`;
-          apiResponse.style.color = "red";
+          // Exibir erro no modal em vez da interface
+          showErrorModal(`Erro na geração do template:\n${json.error}`);
+          // Esconder o loader
+          if (pageLoader) {
+            pageLoader.style.display = "none";
+          }
         } else if (json.html_array) {
           // Salvar o template HTML globalmente para uso no modal
           currentHtmlTemplate = json.html_array;
@@ -122,25 +124,26 @@ async function createHtmlTemplate() {
           createLink(json.html_array);
         } else {
           // Caso resposta inesperada
-          apiResponse.textContent = "⚠️ Resposta inesperada da API.";
-          apiResponse.style.color = "orange";
+          showErrorModal("Resposta inesperada da API. Tente novamente.");
+          // Esconder o loader
+          if (pageLoader) {
+            pageLoader.style.display = "none";
+          }
         }
       })
       .catch((err) => {
-        // Exibe erro de comunicação com a API
-        const apiResponse = document.getElementById("apiResponse");
-        apiResponse.textContent = `❌ Erro: ${err.message}`;
-        apiResponse.style.color = "red";
+        // Exibir erro no modal em vez da interface
+        showErrorModal(`Erro de comunicação: ${err.message}`);
+        // Esconder o loader
+        if (pageLoader) {
+          pageLoader.style.display = "none";
+        }
       });
   } catch (error) {
     // Erro geral na função
     console.error("Erro na criação do quiz:", error);
-    const apiResponse = document.getElementById("apiResponse");
-    if (apiResponse) {
-      apiResponse.textContent = `❌ Erro: ${error.message}`;
-      apiResponse.style.color = "red";
-    }
-    // Esconder o loader apenas em caso de erro
+    showErrorModal(`Erro na criação do quiz: ${error.message}`);
+    // Esconder o loader em caso de erro
     if (pageLoader) {
       pageLoader.style.display = "none";
     }
@@ -166,8 +169,14 @@ async function createLink(htmlTemplate) {
     apiKey = config.elegantQuizApiKey;
   } catch (error) {
     console.error("Erro ao buscar configuração:", error);
-    // Fallback para desenvolvimento
-    apiKey = "cmbr8lju0000009l85ri155xj";
+    // Exibir erro no modal
+    showErrorModal(`Erro ao buscar configuração da API: ${error.message}`);
+    // Esconder o loader
+    const pageLoader = document.getElementById("page-loader");
+    if (pageLoader) {
+      pageLoader.style.display = "none";
+    }
+    return; // Parar a execução se não conseguir buscar a configuração
   }
 
   // Configuração dos headers para a requisição da criação do link
@@ -194,21 +203,20 @@ async function createLink(htmlTemplate) {
   fetch("https://custom-embed.humberto-56a.workers.dev/s/", requestOptions)
     .then((response) => response.json())
     .then(async (result) => {
-      const linkResponse = document.getElementById("linkResponse");
-      if (!linkResponse) return;
       if (result.success) {
         // Mostrar modal de sucesso em vez da mensagem antiga
         showSuccessModal();
       } else {
-        // Exibe erro na criação do link
-        linkResponse.textContent = `❌ Erro ao criar o link: ${JSON.stringify(
-          result
-        )}`;
-        linkResponse.style.color = "red";
+        // Exibir erro no modal
+        showErrorModal(
+          `Erro ao criar o link do quiz: ${JSON.stringify(result)}`
+        );
       }
     })
     .catch((error) => {
       console.error(error);
+      // Exibir erro no modal
+      showErrorModal(`Erro ao criar o link do quiz: ${error.message}`);
       // Esconder o loader em caso de erro
       const pageLoader = document.getElementById("page-loader");
       if (pageLoader) {
