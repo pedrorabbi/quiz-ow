@@ -162,15 +162,16 @@ function loadQuizHistory() {
       justify-content: center;
     `;
 
-    // Botão de traduzir
-    const translateButton = document.createElement("button");
-    translateButton.innerHTML =
-      '<span class="material-symbols-rounded" style="font-size: 16px;">translate</span>';
-    translateButton.title = "Traduzir quiz";
-    translateButton.style.cssText = `padding: 4px;
+
+    // Botão de excluir
+    const deleteButton = document.createElement("button");
+    deleteButton.innerHTML =
+      '<span class="material-symbols-rounded" style="font-size: 16px;">delete</span>';
+    deleteButton.title = "Excluir quiz";
+    deleteButton.style.cssText = `padding: 4px;
       background: transparent;
-      color: #3B82F6;
-      border: 1px solid #3B82F6;
+      color: #EF4444;
+      border: 1px solid #EF4444;
       border-radius: 4px;
       cursor: pointer;
       width: fit-content;
@@ -178,14 +179,11 @@ function loadQuizHistory() {
       display: flex;
       align-items: center;
       justify-content: center;
-      opacity: 1;
     `;
-    translateButton.disabled = false;
-    translateButton.setAttribute("data-action", "translate");
 
     buttonsDiv.appendChild(toggleButton);
     buttonsDiv.appendChild(duplicateButton);
-    buttonsDiv.appendChild(translateButton);
+    buttonsDiv.appendChild(deleteButton);
 
     headerDiv.appendChild(infoDiv);
     headerDiv.appendChild(buttonsDiv);
@@ -249,16 +247,10 @@ function loadQuizHistory() {
       duplicateQuiz(quiz);
     });
 
-    translateButton.addEventListener("click", async (e) => {
+
+    deleteButton.addEventListener("click", (e) => {
       e.stopPropagation();
-      const lang = prompt(
-        "Digite o código do idioma para traduzir (ex: en, es, fr):"
-      );
-      if (lang) {
-        // Carrega o quiz do histórico para o formulário e depois traduz
-        duplicateQuiz(quiz);
-        setTimeout(() => translateCurrentFormViaServer(lang), 100);
-      }
+      deleteQuiz(quiz.id, index);
     });
   });
 }
@@ -335,4 +327,25 @@ function duplicateQuiz(quizData) {
     // Scroll para o topo
     window.scrollTo(0, 0);
   }, 100);
+}
+
+function deleteQuiz(quizId, index) {
+  // Confirmar antes de excluir
+  const confirmDelete = confirm("Tem certeza que deseja excluir este quiz do histórico?");
+
+  if (!confirmDelete) {
+    return;
+  }
+
+  // Carregar histórico atual
+  let history = JSON.parse(localStorage.getItem("quizHistory") || "[]");
+
+  // Remover o quiz pelo índice
+  history.splice(index, 1);
+
+  // Salvar histórico atualizado
+  localStorage.setItem("quizHistory", JSON.stringify(history));
+
+  // Recarregar a exibição do histórico
+  loadQuizHistory();
 }
