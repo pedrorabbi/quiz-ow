@@ -138,8 +138,7 @@ async function createHtmlTemplate() {
       apiResponse.textContent = `❌ Erro: ${error.message}`;
       apiResponse.style.color = "red";
     }
-  } finally {
-    // Sempre esconder o loader de página inteira
+    // Esconder o loader apenas em caso de erro
     if (pageLoader) {
       pageLoader.style.display = "none";
     }
@@ -148,13 +147,11 @@ async function createHtmlTemplate() {
 
 // Função que cria o link do quiz a partir do template HTML gerado
 function createLink(htmlTemplate) {
-  // Mostrar o loader de página inteira para criação do link
-  const pageLoader = document.getElementById("page-loader");
+  // Atualizar o texto do loader para a segunda etapa
   const loaderText = document.getElementById("loader-text");
 
-  if (pageLoader && loaderText) {
+  if (loaderText) {
     loaderText.textContent = "Criando link do quiz...";
-    pageLoader.style.display = "flex";
   }
 
   const quizName = document.getElementById("vertical").value;
@@ -196,7 +193,14 @@ function createLink(htmlTemplate) {
         linkResponse.style.color = "red";
       }
     })
-    .catch((error) => console.error(error))
+    .catch((error) => {
+      console.error(error);
+      // Esconder o loader em caso de erro
+      const pageLoader = document.getElementById("page-loader");
+      if (pageLoader) {
+        pageLoader.style.display = "none";
+      }
+    })
     .finally(() => {
       // Sempre esconder o loader de página inteira
       if (pageLoader) {
