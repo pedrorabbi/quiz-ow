@@ -133,7 +133,7 @@ function createLink(htmlTemplate) {
   const raw = JSON.stringify({
     name: quizName,
     data: {
-      html_array: [htmlTemplate], // Usa o template HTML retornado
+      html: htmlTemplate, // Usa o template HTML retornado
     },
   });
 
@@ -737,8 +737,7 @@ function createPreviewLoader(loaderText) {
   // Texto do loader
   const loaderTextDiv = document.createElement("div");
   loaderTextDiv.textContent = loaderText;
-  loaderTextDiv.style.cssText = `
-    font-size: 18px;
+  loaderTextDiv.style.cssText = `font-size: 18px;
     font-weight: bold;
     color: #22C55D;
     margin: 40px 0;
@@ -748,8 +747,7 @@ function createPreviewLoader(loaderText) {
 
   // Animação de loading (pontos)
   const dotsDiv = document.createElement("div");
-  dotsDiv.style.cssText = `
-    display: flex;
+  dotsDiv.style.cssText = `display: flex;
     justify-content: center;
     gap: 8px;
     margin: 20px 0;
@@ -757,13 +755,12 @@ function createPreviewLoader(loaderText) {
 
   for (let i = 0; i < 3; i++) {
     const dot = document.createElement("div");
-    dot.style.cssText = `
-      width: 12px;
+    dot.style.cssText = `width: 12px;
       height: 12px;
       background-color: #22C55D;
       border-radius: 50%;
       animation: loadingDot 1.2s infinite ease-in-out;
-      animation-delay: ${i * 0.2}s;
+      animation-delay: " + i * 0.2 + "s;
     `;
     dotsDiv.appendChild(dot);
   }
@@ -962,6 +959,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Carregar histórico ao iniciar
   loadQuizHistory();
+
+  // Adicionar listener para o dropdown de tradução em tempo real
+  const liveTranslateSelect = document.getElementById("liveTranslateSelect");
+  if (liveTranslateSelect) {
+    liveTranslateSelect.addEventListener("change", (e) => {
+      const selectedLanguage = e.target.value;
+      if (selectedLanguage) {
+        translateCurrentFormViaServer(selectedLanguage);
+      }
+    });
+  }
+
+  // Configura a UI de tradução
+  enableSimpleTranslationUI();
 });
 
 // Funções para gerenciar histórico de quizzes
@@ -1053,8 +1064,7 @@ function loadQuizHistory() {
 
   history.forEach((quiz, index) => {
     const historyItem = document.createElement("div");
-    historyItem.style.cssText = `
-      border: 1px solid #e0e0e0;
+    historyItem.style.cssText = `border: 1px solid #e0e0e0;
       border-radius: 6px;
       padding: 12px;
       background: #f9f9f9;
@@ -1063,8 +1073,7 @@ function loadQuizHistory() {
 
     // Header do item com informações básicas
     const headerDiv = document.createElement("div");
-    headerDiv.style.cssText = `
-      display: flex;
+    headerDiv.style.cssText = `display: flex;
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
@@ -1098,8 +1107,7 @@ function loadQuizHistory() {
     toggleButton.innerHTML =
       '<span class="material-symbols-rounded" style="font-size: 16px;">expand_more</span>';
     toggleButton.title = "Expandir detalhes";
-    toggleButton.style.cssText = `
-      padding: 4px;
+    toggleButton.style.cssText = `padding: 4px;
       background: transparent;
       color: #666;
       border: 1px solid #ccc;
@@ -1116,8 +1124,7 @@ function loadQuizHistory() {
     duplicateButton.innerHTML =
       '<span class="material-symbols-rounded" style="font-size: 16px;">content_copy</span>';
     duplicateButton.title = "Duplicar quiz";
-    duplicateButton.style.cssText = `
-      padding: 4px;
+    duplicateButton.style.cssText = `padding: 4px;
       background: transparent;
       color: #22C55D;
       border: 1px solid #22C55D;
@@ -1130,16 +1137,37 @@ function loadQuizHistory() {
       justify-content: center;
     `;
 
+    // Botão de traduzir
+    const translateButton = document.createElement("button");
+    translateButton.innerHTML =
+      '<span class="material-symbols-rounded" style="font-size: 16px;">translate</span>';
+    translateButton.title = "Traduzir quiz";
+    translateButton.style.cssText = `padding: 4px;
+      background: transparent;
+      color: #3B82F6;
+      border: 1px solid #3B82F6;
+      border-radius: 4px;
+      cursor: pointer;
+      width: fit-content;
+      flex: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+    `;
+    translateButton.disabled = false;
+    translateButton.setAttribute("data-action", "translate");
+
     buttonsDiv.appendChild(toggleButton);
     buttonsDiv.appendChild(duplicateButton);
+    buttonsDiv.appendChild(translateButton);
 
     headerDiv.appendChild(infoDiv);
     headerDiv.appendChild(buttonsDiv);
 
     // Conteúdo expandível com detalhes dos steps
     const expandableDiv = document.createElement("div");
-    expandableDiv.style.cssText = `
-      display: none;
+    expandableDiv.style.cssText = `display: none;
       margin-top: 12px;
       padding-top: 12px;
       border-top: 1px solid #e0e0e0;
@@ -1155,118 +1183,77 @@ function loadQuizHistory() {
 
       quiz.items.forEach((item, stepIndex) => {
         const stepDiv = document.createElement("div");
-        stepDiv.style.cssText = `
-          padding: 8px;
+        stepDiv.style.cssText =
+          `padding: 8px;
           margin: 4px 0;
           border-radius: 4px;
           font-size: 12px;
-          ${
-            item.type === "question"
-              ? "background: #f0f9ff; border-left: 3px solid #0ea5e9;"
-              : "background: #f0fdf4; border-left: 3px solid #22c55e;"
-          }
-        `;
+          ` +
+          (item.type === "question"
+            ? "background: #f0f9ff; border-left: 3px solid #0ea5e9;"
+            : "background: #f0fdf4; border-left: 3px solid #22c55e;");
 
         if (item.type === "question") {
           stepDiv.innerHTML = `
-            <div style="font-weight: bold; color: #0ea5e9; margin-bottom: 4px;">
-              📝 Pergunta ${stepIndex + 1}
-            </div>
-            <div style="color: #333; margin-bottom: 4px;">${item.question}</div>
-            <div style="color: #666; font-size: 11px;">
-              Opções: ${item.options.join(" • ")}
-            </div>
+            <strong>Pergunta:</strong> ${item.question}<br>
+            <em>Opções: ${item.options.join(", ")}
           `;
         } else {
-          stepDiv.innerHTML = `
-            <div style="font-weight: bold; color: #22c55e; margin-bottom: 4px;">
-              ⏳ Loader ${stepIndex + 1}
-            </div>
-            <div style="color: #333;">${item.text}</div>
-          `;
+          stepDiv.innerHTML = `<strong>Loader:</strong> ${item.text}`;
         }
-
         expandableDiv.appendChild(stepDiv);
       });
     }
 
-    // Configurações do quiz
-    const configTitle = document.createElement("div");
-    configTitle.style.cssText =
-      "font-weight: bold; font-size: 12px; color: #666; margin: 12px 0 8px 0; text-transform: uppercase;";
-    configTitle.textContent = "Configurações:";
-    expandableDiv.appendChild(configTitle);
-
-    const configDiv = document.createElement("div");
-    configDiv.style.cssText = "font-size: 12px; color: #666; line-height: 1.4;";
-    configDiv.innerHTML = `
-      <div><strong>Vertical:</strong> ${quiz.vertical || "Não definido"}</div>
-      <div><strong>Domínio:</strong> ${quiz.domain || "Não definido"}</div>
-      <div><strong>Com retenção:</strong> ${
-        quiz.withRetention ? "Sim" : "Não"
-      }</div>
-      <div><strong>Botão final:</strong> ${
-        quiz.buttonText || "Não definido"
-      }</div>
-      <div><strong>Rodapé:</strong> ${quiz.footnote || "Não definido"}</div>
-      <div><strong>Cores:</strong> 
-        <span style="display: inline-block; width: 12px; height: 12px; background: ${
-          quiz.primaryColor
-        }; border: 1px solid #ccc; border-radius: 2px; margin: 0 2px;"></span>
-        <span style="display: inline-block; width: 12px; height: 12px; background: ${
-          quiz.secondaryColor
-        }; border: 1px solid #ccc; border-radius: 2px; margin: 0 2px;"></span>
-        <span style="display: inline-block; width: 12px; height: 12px; background: ${
-          quiz.hoverColor
-        }; border: 1px solid #ccc; border-radius: 2px; margin: 0 2px;"></span>
-      </div>
-    `;
-    expandableDiv.appendChild(configDiv);
-
-    // Eventos
-    let isExpanded = false;
-    const toggleExpand = () => {
-      isExpanded = !isExpanded;
-      if (isExpanded) {
-        expandableDiv.style.display = "block";
-        toggleButton.innerHTML =
-          '<span class="material-symbols-rounded" style="font-size: 16px;">expand_less</span>';
-        toggleButton.title = "Recolher detalhes";
-      } else {
-        expandableDiv.style.display = "none";
-        toggleButton.innerHTML =
-          '<span class="material-symbols-rounded" style="font-size: 16px;">expand_more</span>';
-        toggleButton.title = "Expandir detalhes";
-      }
-    };
-
-    toggleButton.onclick = (e) => {
-      e.stopPropagation();
-      toggleExpand();
-    };
-    headerDiv.onclick = (e) => {
-      // Só expandir se não clicou nos botões
-      if (!e.target.closest("button")) {
-        toggleExpand();
-      }
-    };
-
-    duplicateButton.onclick = (e) => {
-      e.stopPropagation();
-      duplicateQuiz(quiz);
-    };
-
     historyItem.appendChild(headerDiv);
     historyItem.appendChild(expandableDiv);
     historyList.appendChild(historyItem);
+
+    // Event listeners para os botões
+    toggleButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isVisible = expandableDiv.style.display === "block";
+      expandableDiv.style.display = isVisible ? "none" : "block";
+      toggleButton.innerHTML = `<span class="material-symbols-rounded" style="font-size: 16px;">${
+        isVisible ? "expand_more" : "expand_less"
+      }</span>`;
+    });
+
+    duplicateButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      duplicateQuiz(quiz);
+    });
+
+    translateButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const lang = prompt(
+        "Digite o código do idioma para traduzir (ex: en, es, fr):"
+      );
+      if (lang) {
+        // Carrega o quiz do histórico para o formulário e depois traduz
+        duplicateQuiz(quiz);
+        setTimeout(() => translateCurrentFormViaServer(lang), 100);
+      }
+    });
   });
 }
 
 function duplicateQuiz(quizData) {
   // Limpar formulário atual
-  clearForm();
+  document.getElementById("vertical").value = "";
+  document.getElementById("domain").value = "";
+  document.getElementById("withRetention").checked = false;
+  document.getElementById("title").value = "";
+  document.getElementById("nameLabel").value = "";
+  document.getElementById("emailLabel").value = "";
+  document.getElementById("buttonText").value = "";
+  document.getElementById("footnote").value = "";
+  document.getElementById("primaryColor").value = "#22C55D";
+  document.getElementById("secondaryColor").value = "#16A349";
+  document.getElementById("hoverColor").value = "#16A349";
+  document.getElementById("questionsContainer").innerHTML = "";
 
-  // Preencher campos básicos
+  // Preencher com dados do quiz
   document.getElementById("vertical").value = quizData.vertical || "";
   document.getElementById("domain").value = quizData.domain || "";
   document.getElementById("withRetention").checked =
@@ -1283,85 +1270,243 @@ function duplicateQuiz(quizData) {
   document.getElementById("hoverColor").value =
     quizData.hoverColor || "#16A349";
 
-  // Atualizar campos de retenção
-  toggleRetentionFields();
-
-  // Recriar perguntas e loaders na ordem original
-  const questionsContainer = document.getElementById("questionsContainer");
-  questionsContainer.innerHTML = "";
-
-  quizData.items.forEach((item) => {
-    if (item.type === "question") {
-      // Adicionar pergunta
-      addQuestion();
-      const questionBlocks = document.querySelectorAll(".question-block");
-      const lastQuestionBlock = questionBlocks[questionBlocks.length - 1];
-
-      // Preencher texto da pergunta
-      const questionInput = lastQuestionBlock.querySelector(".question-input");
-      questionInput.value = item.question;
-
-      // Preencher opções
-      const optionInputs = lastQuestionBlock.querySelectorAll(".option-input");
-
-      // Adicionar opções extras se necessário
-      for (let i = optionInputs.length; i < item.options.length; i++) {
-        const addButton = lastQuestionBlock.querySelector(
-          'button[onclick*="addOption"]'
+  // Adicionar perguntas e loaders
+  if (quizData.items) {
+    quizData.items.forEach((item) => {
+      if (item.type === "question") {
+        addQuestion();
+        const newQuestionBlock = document.querySelector(
+          ".question-block:last-child"
         );
-        addOption(addButton);
+        newQuestionBlock.querySelector(".question-input").value = item.question;
+        const optionsContainer =
+          newQuestionBlock.querySelector(".options-container");
+        optionsContainer.innerHTML = ""; // Limpa opções padrão
+        item.options.forEach((opt, i) => {
+          addOption(
+            newQuestionBlock.querySelector('button[onclick="addOption(this)"]')
+          );
+          const optionInputs =
+            optionsContainer.querySelectorAll(".option-input");
+          optionInputs[i].value = opt;
+        });
+      } else if (item.type === "loader") {
+        addLoader();
+        const newLoaderBlock = document.querySelector(
+          ".loader-block:last-child"
+        );
+        newLoaderBlock.querySelector(".loader-input").value = item.text;
       }
+    });
+  }
 
-      // Preencher todas as opções
-      const allOptionInputs =
-        lastQuestionBlock.querySelectorAll(".option-input");
-      item.options.forEach((option, index) => {
-        if (allOptionInputs[index]) {
-          allOptionInputs[index].value = option;
-        }
-      });
-    } else if (item.type === "loader") {
-      // Adicionar loader
-      addLoader();
-      const loaderBlocks = document.querySelectorAll(".loader-block");
-      const lastLoaderBlock = loaderBlocks[loaderBlocks.length - 1];
+  // Atualizar UI
+  toggleRetentionFields();
+  renumberQuestions();
+  resetPreview();
+  updatePreview();
 
-      // Preencher texto do loader
-      const loaderInput = lastLoaderBlock.querySelector(".loader-input");
-      loaderInput.value = item.text;
+  // Scroll para o topo
+  window.scrollTo(0, 0);
+}
+
+/**
+ * Coleta todos os textos do formulário e os retorna em um objeto estruturado.
+ * @returns {object} Objeto com todos os textos do quiz.
+ */
+function getCurrentQuizDataFromForm() {
+  const quizData = {
+    title: document.getElementById("title").value,
+    vertical: document.getElementById("vertical").value,
+    nameLabel: document.getElementById("nameLabel").value,
+    emailLabel: document.getElementById("emailLabel").value,
+    buttonText: document.getElementById("buttonText").value,
+    footnote: document.getElementById("footnote").value,
+    items: [],
+  };
+
+  const allBlocks = document.querySelectorAll(".question-block, .loader-block");
+  allBlocks.forEach((block) => {
+    if (block.classList.contains("question-block")) {
+      const questionText = block.querySelector(".question-input").value;
+      const optionInputs = block.querySelectorAll(".option-input");
+      const options = Array.from(optionInputs)
+        .map((input) => input.value.trim())
+        .filter(Boolean);
+      if (questionText) {
+        quizData.items.push({
+          type: "question",
+          question: questionText,
+          options,
+        });
+      }
+    } else if (block.classList.contains("loader-block")) {
+      const loaderText = block.querySelector(".loader-input").value.trim();
+      if (loaderText) {
+        quizData.items.push({ type: "loader", text: loaderText });
+      }
     }
   });
 
-  // Atualizar preview
-  resetPreview();
-  updatePreview();
-
-  // Scroll para o topo do formulário
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  return quizData;
 }
 
-function clearForm() {
-  // Limpar campos básicos
-  document.getElementById("vertical").value = "";
-  document.getElementById("domain").value = "";
-  document.getElementById("withRetention").checked = true;
-  document.getElementById("title").value = "";
-  document.getElementById("nameLabel").value = "";
-  document.getElementById("emailLabel").value = "";
-  document.getElementById("buttonText").value = "";
-  document.getElementById("footnote").value = "";
-  document.getElementById("primaryColor").value = "#22C55D";
-  document.getElementById("secondaryColor").value = "#16A349";
-  document.getElementById("hoverColor").value = "#16A349";
+/**
+ * Preenche o formulário com os dados de um objeto de quiz traduzido.
+ * @param {object} translatedQuiz - O objeto do quiz com os textos traduzidos.
+ */
+function populateFormWithTranslatedData(translatedQuiz) {
+  if (!translatedQuiz) return;
 
-  // Limpar perguntas e loaders
-  document.getElementById("questionsContainer").innerHTML = "";
+  // Preencher campos básicos
+  if (translatedQuiz.title)
+    document.getElementById("title").value = translatedQuiz.title;
+  if (translatedQuiz.vertical)
+    document.getElementById("vertical").value = translatedQuiz.vertical;
+  if (translatedQuiz.nameLabel)
+    document.getElementById("nameLabel").value = translatedQuiz.nameLabel;
+  if (translatedQuiz.emailLabel)
+    document.getElementById("emailLabel").value = translatedQuiz.emailLabel;
+  if (translatedQuiz.buttonText)
+    document.getElementById("buttonText").value = translatedQuiz.buttonText;
+  if (translatedQuiz.footnote)
+    document.getElementById("footnote").value = translatedQuiz.footnote;
 
-  // Limpar respostas da API
-  document.getElementById("apiResponse").innerHTML = "";
-  document.getElementById("linkResponse").innerHTML = "";
+  // Preencher perguntas e loaders
+  const allBlocks = document.querySelectorAll(".question-block, .loader-block");
+  let itemIndex = 0;
+  if (translatedQuiz.items) {
+    allBlocks.forEach((block) => {
+      const item = translatedQuiz.items[itemIndex];
+      if (!item) return;
 
-  // Resetar preview
-  resetPreview();
-  updatePreview();
+      if (
+        block.classList.contains("question-block") &&
+        item.type === "question"
+      ) {
+        block.querySelector(".question-input").value = item.question;
+        const optionInputs = block.querySelectorAll(".option-input");
+        optionInputs.forEach((input, i) => {
+          if (item.options[i]) {
+            input.value = item.options[i];
+          }
+        });
+        itemIndex++;
+      } else if (
+        block.classList.contains("loader-block") &&
+        item.type === "loader"
+      ) {
+        block.querySelector(".loader-input").value = item.text;
+        itemIndex++;
+      }
+    });
+  }
+}
+
+/**
+ * Função principal para traduzir o formulário atual usando o endpoint do servidor.
+ * @param {string} targetLanguage - O código do idioma de destino (ex: 'es', 'en').
+ */
+async function translateCurrentFormViaServer(targetLanguage) {
+  const statusElement = document.getElementById("liveTranslateStatus");
+  const liveTranslateSelect = document.getElementById("liveTranslateSelect");
+  const pageLoader = document.getElementById("page-loader");
+  const loaderText = document.getElementById("loader-text");
+
+  // Mapeia código para nome do idioma
+  const languageNames = {
+    en: "Inglês",
+    es: "Espanhol",
+    fr: "Francês",
+    de: "Alemão",
+    it: "Italiano",
+    ru: "Russo",
+    zh: "Chinês (Mandarim)",
+    ja: "Japonês",
+    ko: "Coreano",
+    ar: "Árabe",
+    hi: "Hindi",
+  };
+
+  try {
+    // Mostrar o loader de página inteira
+    loaderText.textContent = `Traduzindo para ${
+      languageNames[targetLanguage] || targetLanguage
+    }...`;
+    pageLoader.style.display = "flex";
+
+    liveTranslateSelect.disabled = true;
+
+    const quizData = getCurrentQuizDataFromForm();
+
+    const response = await fetch("/translate-quiz", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quizData, targetLanguage }),
+    });
+
+    if (!response.ok) {
+      const errorResult = await response.json();
+      throw new Error(
+        errorResult.error || "Falha na comunicação com o servidor."
+      );
+    }
+
+    const translatedQuiz = await response.json();
+
+    populateFormWithTranslatedData(translatedQuiz);
+
+    statusElement.textContent = "Tradução concluída!";
+    statusElement.style.color = "#22C55D";
+
+    resetPreview();
+    updatePreview();
+  } catch (error) {
+    console.error("Erro ao traduzir via servidor:", error);
+    statusElement.textContent = `Erro: ${error.message}`;
+    statusElement.style.color = "#ef4444";
+  } finally {
+    // Esconder o loader de página inteira
+    pageLoader.style.display = "none";
+    liveTranslateSelect.disabled = false;
+    setTimeout(() => {
+      statusElement.textContent = "";
+      statusElement.style.color = "#666";
+      liveTranslateSelect.value = "";
+    }, 4000);
+  }
+}
+
+/**
+ * Habilita a UI de tradução.
+ */
+function enableSimpleTranslationUI() {
+  const loaderElement = document.getElementById("translationLoader");
+  const sectionElement = document.getElementById("translationSection");
+  const liveTranslateSelect = document.getElementById("liveTranslateSelect");
+
+  if (loaderElement) loaderElement.style.display = "none";
+  if (sectionElement) {
+    sectionElement.style.opacity = "1";
+    sectionElement.style.background = "#f0f9ff";
+  }
+
+  if (liveTranslateSelect) {
+    liveTranslateSelect.disabled = false;
+    liveTranslateSelect.style.opacity = "1";
+    liveTranslateSelect.innerHTML = `
+            <option value="">Selecione um idioma...</option>
+            <option value="en">🇺🇸 Inglês</option>
+            <option value="es">🇪🇸 Espanhol</option>
+            <option value="fr">🇫🇷 Francês</option>
+            <option value="de">🇩🇪 Alemão</option>
+            <option value="it">🇮🇹 Italiano</option>
+            <option value="ru">🇷🇺 Russo</option>
+            <option value="zh">🇨🇳 Chinês (Mandarim)</option>
+            <option value="ja">🇯🇵 Japonês</option>
+            <option value="ko">🇰🇷 Coreano</option>
+            <option value="ar">🇸🇦 Árabe</option>
+            <option value="hi">🇮🇳 Hindi</option>
+        `;
+  }
 }
