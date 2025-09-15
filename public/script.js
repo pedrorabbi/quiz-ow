@@ -1,5 +1,18 @@
+// Variável global para armazenar o template HTML criado
+let currentHtmlTemplate = null;
+
 async function createHtmlTemplate() {
-  // Coleta os valores dos campos do formulário pelo ID
+  // Mostrar o loader de página inteira
+  const pageLoader = document.getElementById("page-loader");
+  const loaderText = document.getElementById("loader-text");
+
+  if (pageLoader && loaderText) {
+    loaderText.textContent = "Criando quiz...";
+    pageLoader.style.display = "flex";
+  }
+
+  try {
+    // Coleta os valores dos campos do formulário pelo ID
   const vertical = document.getElementById("vertical").value;
   const domain = document.getElementById("domain").value;
   const primaryColor = document.getElementById("primaryColor").value;
@@ -98,9 +111,8 @@ async function createHtmlTemplate() {
         apiResponse.innerHTML = `❌ Erro: ${json.error.replace(/\n/g, "<br>")}`;
         apiResponse.style.color = "red";
       } else if (json.html_array) {
-        // Caso sucesso, informa ao usuário e chama função para criar link
-        apiResponse.textContent = "✅ Quiz criado com sucesso!";
-        apiResponse.style.color = "green";
+        // Salvar o template HTML globalmente para uso no modal
+        currentHtmlTemplate = json.html_array;
 
         // Salvar quiz no histórico antes de criar o link
         saveQuizToHistory();
@@ -118,10 +130,33 @@ async function createHtmlTemplate() {
       apiResponse.textContent = `❌ Erro: ${err.message}`;
       apiResponse.style.color = "red";
     });
+  } catch (error) {
+    // Erro geral na função
+    console.error("Erro na criação do quiz:", error);
+    const apiResponse = document.getElementById("apiResponse");
+    if (apiResponse) {
+      apiResponse.textContent = `❌ Erro: ${error.message}`;
+      apiResponse.style.color = "red";
+    }
+  } finally {
+    // Sempre esconder o loader de página inteira
+    if (pageLoader) {
+      pageLoader.style.display = "none";
+    }
+  }
 }
 
 // Função que cria o link do quiz a partir do template HTML gerado
 function createLink(htmlTemplate) {
+  // Mostrar o loader de página inteira para criação do link
+  const pageLoader = document.getElementById("page-loader");
+  const loaderText = document.getElementById("loader-text");
+
+  if (pageLoader && loaderText) {
+    loaderText.textContent = "Criando link do quiz...";
+    pageLoader.style.display = "flex";
+  }
+
   const quizName = document.getElementById("vertical").value;
 
   // Configuração dos headers para a requisição da criação do link
@@ -151,12 +186,8 @@ function createLink(htmlTemplate) {
       const linkResponse = document.getElementById("linkResponse");
       if (!linkResponse) return;
       if (result.success) {
-        // Exibe link criado com sucesso na interface
-        linkResponse.innerHTML = `
-          <div>✅ Link criado com sucesso!</div>
-          <div style="font-size: 14px;">${result.file}</div>
-        `;
-        linkResponse.style.color = "green";
+        // Mostrar modal de sucesso em vez da mensagem antiga
+        showSuccessModal();
       } else {
         // Exibe erro na criação do link
         linkResponse.textContent = `❌ Erro ao criar o link: ${JSON.stringify(
@@ -165,7 +196,13 @@ function createLink(htmlTemplate) {
         linkResponse.style.color = "red";
       }
     })
-    .catch((error) => console.error(error));
+    .catch((error) => console.error(error))
+    .finally(() => {
+      // Sempre esconder o loader de página inteira
+      if (pageLoader) {
+        pageLoader.style.display = "none";
+      }
+    });
 }
 
 // Variáveis para controle do drag and drop
@@ -1317,7 +1354,6 @@ function duplicateQuiz(quizData) {
 function getCurrentQuizDataFromForm() {
   const quizData = {
     title: document.getElementById("title").value,
-    vertical: document.getElementById("vertical").value,
     nameLabel: document.getElementById("nameLabel").value,
     emailLabel: document.getElementById("emailLabel").value,
     buttonText: document.getElementById("buttonText").value,
@@ -1361,8 +1397,6 @@ function populateFormWithTranslatedData(translatedQuiz) {
   // Preencher campos básicos
   if (translatedQuiz.title)
     document.getElementById("title").value = translatedQuiz.title;
-  if (translatedQuiz.vertical)
-    document.getElementById("vertical").value = translatedQuiz.vertical;
   if (translatedQuiz.nameLabel)
     document.getElementById("nameLabel").value = translatedQuiz.nameLabel;
   if (translatedQuiz.emailLabel)
@@ -1415,17 +1449,46 @@ async function translateCurrentFormViaServer(targetLanguage) {
 
   // Mapeia código para nome do idioma
   const languageNames = {
+    zh: "Chinês (Mandarim)",
+    hi: "Hindi",
     en: "Inglês",
     es: "Espanhol",
-    fr: "Francês",
-    de: "Alemão",
-    it: "Italiano",
-    ru: "Russo",
-    zh: "Chinês (Mandarim)",
-    ja: "Japonês",
-    ko: "Coreano",
     ar: "Árabe",
-    hi: "Hindi",
+    bn: "Bengali",
+    fr: "Francês",
+    ru: "Russo",
+    pt: "Português",
+    id: "Indonésio",
+    ur: "Urdu",
+    de: "Alemão",
+    ja: "Japonês",
+    sw: "Suaíli",
+    mr: "Marathi",
+    te: "Telugu",
+    tr: "Turco",
+    ta: "Tâmil",
+    ko: "Coreano",
+    vi: "Vietnamita",
+    it: "Italiano",
+    th: "Tailandês",
+    gu: "Gujarati",
+    kn: "Kannada",
+    fa: "Persa (Farsi)",
+    pl: "Polonês",
+    uk: "Ucraniano",
+    ml: "Malayalam",
+    or: "Oriya",
+    my: "Birmanês",
+    nl: "Holandês",
+    ps: "Pashto",
+    si: "Sinhala",
+    am: "Amárico",
+    ne: "Nepalês",
+    he: "Hebraico",
+    cs: "Tcheco",
+    hu: "Húngaro",
+    ro: "Romeno",
+    el: "Grego",
   };
 
   try {
@@ -1496,17 +1559,120 @@ function enableSimpleTranslationUI() {
     liveTranslateSelect.style.opacity = "1";
     liveTranslateSelect.innerHTML = `
             <option value="">Selecione um idioma...</option>
+            <option value="zh">🇨🇳 Chinês (Mandarim)</option>
+            <option value="hi">🇮🇳 Hindi</option>
             <option value="en">🇺🇸 Inglês</option>
             <option value="es">🇪🇸 Espanhol</option>
-            <option value="fr">🇫🇷 Francês</option>
-            <option value="de">🇩🇪 Alemão</option>
-            <option value="it">🇮🇹 Italiano</option>
-            <option value="ru">🇷🇺 Russo</option>
-            <option value="zh">🇨🇳 Chinês (Mandarim)</option>
-            <option value="ja">🇯🇵 Japonês</option>
-            <option value="ko">🇰🇷 Coreano</option>
             <option value="ar">🇸🇦 Árabe</option>
-            <option value="hi">🇮🇳 Hindi</option>
+            <option value="bn">🇧🇩 Bengali</option>
+            <option value="fr">🇫🇷 Francês</option>
+            <option value="ru">🇷🇺 Russo</option>
+            <option value="pt">🇧🇷 Português</option>
+            <option value="id">🇮🇩 Indonésio</option>
+            <option value="ur">🇵🇰 Urdu</option>
+            <option value="de">🇩🇪 Alemão</option>
+            <option value="ja">🇯🇵 Japonês</option>
+            <option value="sw">🇹🇿 Suaíli</option>
+            <option value="mr">🇮🇳 Marathi</option>
+            <option value="te">🇮🇳 Telugu</option>
+            <option value="tr">🇹🇷 Turco</option>
+            <option value="ta">🇮🇳 Tâmil</option>
+            <option value="ko">🇰🇷 Coreano</option>
+            <option value="vi">🇻🇳 Vietnamita</option>
+            <option value="it">🇮🇹 Italiano</option>
+            <option value="th">🇹🇭 Tailandês</option>
+            <option value="gu">🇮🇳 Gujarati</option>
+            <option value="kn">🇮🇳 Kannada</option>
+            <option value="fa">🇮🇷 Persa (Farsi)</option>
+            <option value="pl">🇵🇱 Polonês</option>
+            <option value="uk">🇺🇦 Ucraniano</option>
+            <option value="ml">🇮🇳 Malayalam</option>
+            <option value="or">🇮🇳 Oriya</option>
+            <option value="my">🇲🇲 Birmanês</option>
+            <option value="nl">🇳🇱 Holandês</option>
+            <option value="ps">🇦🇫 Pashto</option>
+            <option value="si">🇱🇰 Sinhala</option>
+            <option value="am">🇪🇹 Amárico</option>
+            <option value="ne">🇳🇵 Nepalês</option>
+            <option value="he">🇮🇱 Hebraico</option>
+            <option value="cs">🇨🇿 Tcheco</option>
+            <option value="hu">🇭🇺 Húngaro</option>
+            <option value="ro">🇷🇴 Romeno</option>
+            <option value="el">🇬🇷 Grego</option>
         `;
   }
+}
+
+// Funções para controlar o modal de sucesso
+function showSuccessModal() {
+  const modal = document.getElementById("success-modal");
+  if (modal) {
+    modal.style.display = "flex";
+    setupModalEvents();
+  }
+}
+
+function hideSuccessModal() {
+  const modal = document.getElementById("success-modal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
+function setupModalEvents() {
+  // Botão fechar
+  const closeBtn = document.getElementById("close-modal-btn");
+  if (closeBtn) {
+    closeBtn.onclick = hideSuccessModal;
+  }
+
+  // Botão copiar HTML
+  const copyBtn = document.getElementById("copy-html-btn");
+  if (copyBtn) {
+    copyBtn.onclick = copyHtmlTemplate;
+  }
+
+  // Fechar modal clicando no overlay
+  const modal = document.getElementById("success-modal");
+  if (modal) {
+    modal.onclick = function(e) {
+      if (e.target === modal) {
+        hideSuccessModal();
+      }
+    };
+  }
+
+  // Fechar modal com ESC
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+      hideSuccessModal();
+    }
+  });
+}
+
+function copyHtmlTemplate() {
+  if (!currentHtmlTemplate) {
+    alert("Nenhum template HTML disponível para copiar.");
+    return;
+  }
+
+  // Copiar para clipboard
+  navigator.clipboard.writeText(currentHtmlTemplate).then(() => {
+    // Atualizar botão para mostrar sucesso
+    const copyBtn = document.getElementById("copy-html-btn");
+    if (copyBtn) {
+      const originalHTML = copyBtn.innerHTML;
+      copyBtn.innerHTML = '<span class="material-symbols-rounded">check</span>Copiado!';
+      copyBtn.classList.add("copied");
+
+      // Voltar ao estado original após 2 segundos
+      setTimeout(() => {
+        copyBtn.innerHTML = originalHTML;
+        copyBtn.classList.remove("copied");
+      }, 2000);
+    }
+  }).catch(err => {
+    console.error("Erro ao copiar:", err);
+    alert("Erro ao copiar o código HTML.");
+  });
 }
