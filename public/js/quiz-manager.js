@@ -148,7 +148,7 @@ async function createHtmlTemplate() {
 }
 
 // Função que cria o link do quiz a partir do template HTML gerado
-function createLink(htmlTemplate) {
+async function createLink(htmlTemplate) {
   // Atualizar o texto do loader para a segunda etapa
   const loaderText = document.getElementById("loader-text");
 
@@ -158,9 +158,21 @@ function createLink(htmlTemplate) {
 
   const quizName = document.getElementById("vertical").value;
 
+  // Buscar a chave da API do servidor
+  let apiKey;
+  try {
+    const configResponse = await fetch("/api/config");
+    const config = await configResponse.json();
+    apiKey = config.elegantQuizApiKey;
+  } catch (error) {
+    console.error("Erro ao buscar configuração:", error);
+    // Fallback para desenvolvimento
+    apiKey = "cmbr8lju0000009l85ri155xj";
+  }
+
   // Configuração dos headers para a requisição da criação do link
   const myHeaders = new Headers();
-  myHeaders.append("X-ElegantQuiz-ApiKey", "cmbr8lju0000009l85ri155xj");
+  myHeaders.append("X-ElegantQuiz-ApiKey", apiKey);
   myHeaders.append("Content-Type", "application/json");
 
   // Corpo da requisição com nome do quiz e dados do template HTML

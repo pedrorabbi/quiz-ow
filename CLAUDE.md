@@ -1,7 +1,3 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project Overview
 
 This is a Quiz Offer Wall application - a web-based quiz creation tool that generates customizable quizzes with offer wall integration. The application allows users to create branded quizzes that collect user data and integrate with external advertising platforms.
@@ -9,7 +5,8 @@ This is a Quiz Offer Wall application - a web-based quiz creation tool that gene
 ## Architecture
 
 - **Backend**: Express.js server (`app.js`) that serves static files and provides a proxy endpoint
-- **Frontend**: Vanilla HTML/CSS/JavaScript single-page application
+- **Frontend**: Vanilla HTML/CSS/JavaScript single-page application modularizado
+- **Security**: Variáveis de ambiente para chaves de API (dotenv)
 - **Deployment**: Google Cloud Platform (App Engine + Cloud Build)
 - **External Integration**: Proxies requests to quiz template service and creates quiz links via external APIs
 
@@ -17,7 +14,7 @@ This is a Quiz Offer Wall application - a web-based quiz creation tool that gene
 
 - `app.js`: Main Express server with proxy endpoint for template generation
 - `public/index.html`: Quiz creation form interface
-- `public/script.js`: Frontend logic for form handling and API communication  
+- `public/script.js`: Frontend logic for form handling and API communication
 - `public/style.css`: Styling with floating label components and responsive design
 
 ### Data Flow
@@ -28,14 +25,31 @@ This is a Quiz Offer Wall application - a web-based quiz creation tool that gene
 4. On success, frontend automatically creates quiz link via external API
 5. User receives final quiz URL
 
+## Environment Setup
+
+**IMPORTANTE**: Configure as variáveis de ambiente antes de executar:
+
+1. Copie o arquivo de exemplo:
+
+```bash
+cp .env.example .env
+```
+
+2. Edite o arquivo `.env` e adicione suas chaves de API:
+
+```bash
+OPENAI_API_KEY=sua_chave_openai_real
+ELEGANTQUIZ_API_KEY=sua_chave_elegantquiz_real
+```
+
 ## Development Commands
 
 ```bash
+# Install dependencies
+npm install
+
 # Start development server
 npm start
-
-# Install dependencies  
-npm install
 ```
 
 Server runs on port 8080 by default (configurable via PORT environment variable).
@@ -45,7 +59,7 @@ Server runs on port 8080 by default (configurable via PORT environment variable)
 The project is configured for Google Cloud deployment:
 
 - **App Engine**: Uses `app.yaml` with Node.js 20 runtime
-- **Cloud Build**: Automated via `cloudbuild.yaml` 
+- **Cloud Build**: Automated via `cloudbuild.yaml`
 - **Docker**: Container configuration in `Dockerfile`
 
 ## External Dependencies
