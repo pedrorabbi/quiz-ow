@@ -3,6 +3,18 @@
 // Variável global para armazenar o template HTML criado
 let currentHtmlTemplate = null;
 
+function toEscapedVersion(html) {
+  return html
+    // Escapar aspas duplas em atributos e strings
+    .replace(/"/g, '\\"')
+
+    // Transformar regex de \w em \\w
+    .replace(/\\w/g, '\\\\w')
+
+    // Transformar aspas normais em entidades &#34 (sem ;)
+    .replace(/\\"/g, '&#34');
+}
+
 async function createHtmlTemplate() {
   // Mostrar o loader de página inteira
   const pageLoader = document.getElementById("page-loader");
@@ -72,40 +84,46 @@ async function createHtmlTemplate() {
       }));
 
     // Montagem do corpo do request para a API que gera o template HTML
+    const requestBody = {
+      type: "form-basic",
+      inserterUrl: "https://ow-webhook-379661335618.us-east1.run.app/webhook",
+      inserterOptions: {
+        vertical: vertical,
+        domain: domain,
+        service: "pubsub",
+      },
+      color: {
+        primary: primaryColor,
+        secondary: secondaryColor,
+        hover: hoverColor,
+      },
+      adLabel: adLabel,
+      messages: {
+        description: description,
+        title: title,
+        name: nameLabel,
+        email: emailLabel,
+        button: buttonText,
+        footnote: footnote,
+        greeting: greeting,
+      },
+      questions: questions,
+      loaders: items.filter((item) => item.type === "loader"),
+    };
+
+    console.log("🚀 Enviando requisição para geração do template - URL:", "/proxy/template");
+    console.log("🚀 Enviando requisição para geração do template - METHOD:", "POST");
+    console.log("🚀 Enviando requisição para geração do template - BODY:", requestBody);
+
     const htmlTemplate = await fetch("/proxy/template", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: "form-basic",
-        inserterUrl: "https://ow-webhook-379661335618.us-east1.run.app/webhook",
-        inserterOptions: {
-          vertical: vertical,
-          domain: domain,
-          service: "pubsub",
-        },
-        color: {
-          primary: primaryColor,
-          secondary: secondaryColor,
-          hover: hoverColor,
-        },
-        adLabel: adLabel,
-        messages: {
-          description: description,
-          title: title,
-          name: nameLabel,
-          email: emailLabel,
-          button: buttonText,
-          footnote: footnote,
-          greeting: greeting,
-        },
-        questions: questions,
-        loaders: items.filter((item) => item.type === "loader"),
-      }),
+      body: JSON.stringify(requestBody),
     })
       .then(async (res) => {
         // Tratamento da resposta da API
         const json = await res.json();
-        console.log(json);
+        console.log("✅ Resposta recebida da geração do template:", json);
 
         if (json.error) {
           // Exibir erro no modal em vez da interface
@@ -185,12 +203,22 @@ async function createLink(htmlTemplate) {
   myHeaders.append("Content-Type", "application/json");
 
   // Corpo da requisição com nome do quiz e dados do template HTML
-  const raw = JSON.stringify({
+  // Verificar se htmlTemplate é array e converter para string se necessário
+  const htmlString = Array.isArray(htmlTemplate) ? htmlTemplate.join('') : htmlTemplate;
+
+  const linkRequestBody = {
     name: quizName,
     data: {
-      html: htmlTemplate, // Usa o template HTML retornado
+      html: toEscapedVersion(htmlString), // Usa o template HTML escapado
     },
-  });
+  };
+
+  console.log("🚀 Enviando requisição para criação do link - URL:", "https://custom-embed.humberto-56a.workers.dev/s/");
+  console.log("🚀 Enviando requisição para criação do link - METHOD:", "POST");
+  console.log("🚀 Enviando requisição para criação do link - HEADERS:", Object.fromEntries(myHeaders.entries()));
+  console.log("🚀 Enviando requisição para criação do link - BODY:", linkRequestBody);
+
+  const raw = JSON.stringify(linkRequestBody);
 
   const requestOptions = {
     method: "POST",
@@ -203,6 +231,8 @@ async function createLink(htmlTemplate) {
   fetch("https://custom-embed.humberto-56a.workers.dev/s/", requestOptions)
     .then((response) => response.json())
     .then(async (result) => {
+      console.log("✅ Resposta recebida da criação do link:", result);
+
       if (result.success) {
         // Mostrar modal de sucesso em vez da mensagem antiga
         showSuccessModal();
