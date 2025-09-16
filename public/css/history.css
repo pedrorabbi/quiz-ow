@@ -1,0 +1,50 @@
+/* Histórico */
+.quiz-history {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+  padding: 15px;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.history-title {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.no-history {
+  color: #666;
+  font-size: 14px;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* Estilo para título do histórico */
+.history-title-styled {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.history-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Container do histórico "sem histórico" */
+.no-history-container {
+  color: #666;
+  font-size: 14px;
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+}

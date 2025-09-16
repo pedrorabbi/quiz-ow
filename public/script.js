@@ -1,3 +1,15 @@
+function toEscapedVersion(html) {
+  return html
+    // Escapar aspas duplas em atributos e strings
+    .replace(/"/g, '\\"')
+
+    // Transformar regex de \w em \\w
+    .replace(/\\w/g, '\\\\w')
+
+    // Transformar aspas normais em entidades &#34 (sem ;)
+    .replace(/\\"/g, '&#34');
+}
+
 async function createHtmlTemplate() {
   // Coleta os valores dos campos do formulário pelo ID
   const vertical = document.getElementById("vertical").value;
@@ -17,10 +29,10 @@ async function createHtmlTemplate() {
   const withRetention = document.getElementById("withRetention").checked;
   const nameLabel = withRetention
     ? document.getElementById("nameLabel").value
-    : "";
+    : "Nome";
   const emailLabel = withRetention
     ? document.getElementById("emailLabel").value
-    : "";
+    : "Email";
 
   // Coleta as perguntas, loaders e opções adicionadas dinamicamente no formulário
   const items = [];
@@ -56,11 +68,12 @@ async function createHtmlTemplate() {
       options: item.options,
     }));
 
-  // Montagem do corpo do request para a API que gera o template HTML
-  const htmlTemplate = await fetch("/proxy/template", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  // Separar completamente a lógica baseada no tipo de quiz
+  let requestPayload;
+
+  if (withRetention) {
+    // Lógica para quiz COM retenção
+    requestPayload = {
       type: "form-basic",
       inserterUrl: "https://ow-webhook-379661335618.us-east1.run.app/webhook",
       inserterOptions: {
@@ -85,7 +98,42 @@ async function createHtmlTemplate() {
       },
       questions: questions,
       loaders: items.filter((item) => item.type === "loader"),
-    }),
+    };
+  } else {
+    // Lógica para quiz SEM retenção
+    requestPayload = {
+      type: "form-basic",
+      inserterUrl: "https://ow-webhook-379661335618.us-east1.run.app/webhook",
+      inserterOptions: {
+        vertical: vertical,
+        domain: domain,
+        service: "pubsub",
+      },
+      color: {
+        primary: primaryColor,
+        secondary: secondaryColor,
+        hover: hoverColor,
+      },
+      adLabel: adLabel,
+      messages: {
+        description: description,
+        title: title,
+        name: "-",
+        email: "-",
+        button: buttonText,
+        footnote: footnote,
+        greeting: greeting,
+      },
+      questions: questions,
+      loaders: items.filter((item) => item.type === "loader"),
+    };
+  }
+
+  // Montagem do corpo do request para a API que gera o template HTML
+  const htmlTemplate = await fetch("/proxy/template", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(requestPayload),
   })
     .then(async (res) => {
       // Tratamento da resposta da API
@@ -129,11 +177,26 @@ function createLink(htmlTemplate) {
   myHeaders.append("X-ElegantQuiz-ApiKey", "cmbr8lju0000009l85ri155xj");
   myHeaders.append("Content-Type", "application/json");
 
-  // Corpo da requisição com nome do quiz e dados do template HTML
+  // Separar completamente a lógica de processamento do HTML
+  // Verificar se htmlTemplate é array e converter para string se necessário
+  const htmlString = Array.isArray(htmlTemplate) ? htmlTemplate.join('') : htmlTemplate;
+
+  // Verificar se é com retenção para decidir o processamento
+  const withRetention = document.getElementById("withRetention").checked;
+
+  let processedHtml;
+  if (withRetention) {
+    // Quiz COM retenção: HTML sem escape (mantém JavaScript funcional)
+    processedHtml = htmlString;
+  } else {
+    // Quiz SEM retenção: HTML com escape
+    processedHtml = toEscapedVersion(htmlString);
+  }
+
   const raw = JSON.stringify({
     name: quizName,
     data: {
-      html_array: [htmlTemplate], // Usa o template HTML retornado
+      html_array: [processedHtml],
     },
   });
 

@@ -1,0 +1,205 @@
+/* Generic and main styles */
+* {
+  font-family: sans-serif;
+}
+
+* {
+  transition: all 0.2s ease;
+}
+
+h1 {
+  font-size: 24px;
+  margin: 10px 0 20px 0;
+}
+
+h2 {
+  font-size: 20px;
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+hr {
+  width: 100%;
+  border-top: 1px solid lightgrey;
+  border-bottom: 0;
+}
+
+button {
+  padding: 10px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: filter 0.15s;
+  flex: 1;
+}
+
+button[onclick="addQuestion()"] {
+  background-color: #2563eb;
+}
+
+button[onclick="addLoader()"] {
+  background-color: #2563eb;
+}
+
+button[onclick="createHtmlTemplate()"] {
+  background-color: #1baa50;
+}
+
+button[onclick^="addOption"] {
+  background-color: #d9d9d9;
+  border: 1px solid #ccc;
+  color: black;
+}
+
+/* Botões de ação */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.button-row {
+  display: flex;
+  gap: 10px;
+}
+
+/* Respostas da API */
+.api-response {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.link-response {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  text-align: center;
+  word-break: break-all;
+}
+
+/* Modal de sucesso */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 0;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  padding: 24px 24px 16px 24px;
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.success-icon {
+  font-size: 48px;
+  color: #22c55d;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.modal-body {
+  padding: 24px;
+  text-align: center;
+}
+
+.modal-body p {
+  margin: 0 0 20px 0;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.code-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.copy-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  justify-content: center;
+}
+
+.copy-button:hover {
+  background: #2563eb;
+}
+
+.copy-button.copied {
+  background: #22c55d;
+}
+
+.copy-button.copied .material-symbols-rounded {
+  font-size: 18px;
+}
+
+.modal-footer {
+  padding: 16px 24px 24px 24px;
+  text-align: center;
+  border-top: 1px solid #e5e7eb;
+}
+
+.close-button {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.close-button:hover {
+  background: #4b5563;
+}
