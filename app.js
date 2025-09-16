@@ -11,7 +11,9 @@ dotenv.config();
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 if (!OPENAI_API_KEY) {
-  console.error("❌ ERRO: OPENAI_API_KEY não encontrada nas variáveis de ambiente");
+  console.error(
+    "❌ ERRO: OPENAI_API_KEY não encontrada nas variáveis de ambiente"
+  );
   console.log("📝 Crie um arquivo .env na raiz do projeto com:");
   console.log("OPENAI_API_KEY=sua_chave_aqui");
   process.exit(1);
@@ -29,7 +31,8 @@ app.use(express.static(path.join(__dirname, "public")));
 // Endpoint para fornecer configurações (sem expor chaves sensíveis diretamente)
 app.get("/api/config", (req, res) => {
   res.json({
-    elegantQuizApiKey: process.env.ELEGANTQUIZ_API_KEY || "cmbr8lju0000009l85ri155xj"
+    elegantQuizApiKey:
+      process.env.ELEGANTQUIZ_API_KEY || "cmbr8lju0000009l85ri155xj",
   });
 });
 
@@ -114,12 +117,14 @@ app.post("/proxy/template", async (req, res) => {
       const parsedData = JSON.parse(data);
       if (parsedData.html_array && parsedData.html_array[0]) {
         let htmlContent = parsedData.html_array[0];
-        
+
         // Find the questions array in the JavaScript
-        const questionsMatch = htmlContent.match(/const questions = (\[.*?\]);/s);
+        const questionsMatch = htmlContent.match(
+          /const questions = (\[.*?\]);/s
+        );
         if (questionsMatch) {
           const originalQuestions = JSON.parse(questionsMatch[1]);
-          
+
           // Re-add isLoading properties based on original request
           const updatedQuestions = originalQuestions.map((q, index) => {
             const originalQuestion = requestBody.questions[index];
@@ -128,14 +133,14 @@ app.post("/proxy/template", async (req, res) => {
             }
             return q;
           });
-          
+
           // Replace the questions array in the HTML
           const updatedQuestionsString = JSON.stringify(updatedQuestions);
           htmlContent = htmlContent.replace(
             /const questions = \[.*?\];/s,
             `const questions = ${updatedQuestionsString};`
           );
-          
+
           parsedData.html_array[0] = htmlContent;
         }
       }
