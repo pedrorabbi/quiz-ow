@@ -109,7 +109,41 @@ app.post("/proxy/template", async (req, res) => {
     console.log(data);
     console.log("======================");
 
-    res.send(data);
+    // Parse and fix the response to include isLoading properties
+    try {
+      const parsedData = JSON.parse(data);
+      if (parsedData.html_array && parsedData.html_array[0]) {
+        let htmlContent = parsedData.html_array[0];
+        
+        // Find the questions array in the JavaScript
+        const questionsMatch = htmlContent.match(/const questions = (\[.*?\]);/s);
+        if (questionsMatch) {
+          const originalQuestions = JSON.parse(questionsMatch[1]);
+          
+          // Re-add isLoading properties based on original request
+          const updatedQuestions = originalQuestions.map((q, index) => {
+            const originalQuestion = requestBody.questions[index];
+            if (originalQuestion && originalQuestion.isLoading) {
+              return { ...q, isLoading: true };
+            }
+            return q;
+          });
+          
+          // Replace the questions array in the HTML
+          const updatedQuestionsString = JSON.stringify(updatedQuestions);
+          htmlContent = htmlContent.replace(
+            /const questions = \[.*?\];/s,
+            `const questions = ${updatedQuestionsString};`
+          );
+          
+          parsedData.html_array[0] = htmlContent;
+        }
+      }
+      res.json(parsedData);
+    } catch (error) {
+      console.error("Error fixing response:", error);
+      res.send(data);
+    }
   } catch (err) {
     console.error("Erro no proxy:", err);
     res.status(500).send("Erro no proxy");
