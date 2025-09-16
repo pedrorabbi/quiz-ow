@@ -143,14 +143,15 @@ app.post("/proxy/template", async (req, res) => {
         }
 
         // Fix retention: Check if name and email are "-" (no retention)
-        const isWithoutRetention = 
-          requestBody.messages && 
-          requestBody.messages.name === "-" && 
+        const isWithoutRetention =
+          requestBody.messages &&
+          requestBody.messages.name === "-" &&
           requestBody.messages.email === "-";
 
         if (isWithoutRetention) {
           // Replace the final quiz logic to not show form and instead add footnote + show title
-          const formLogicRegex = /if \(index === questions\.length - 1\) \{[^}]*formContainer\.style\.display = 'block'[^}]*\}/s;
+          const formLogicRegex =
+            /if \(index === questions\.length - 1\) \{[^}]*formContainer\.style\.display = 'block'[^}]*\}/s;
           const newFormLogic = `if (index === questions.length - 1) {
             // Show the title in the question container area (between progress and button)
             const h1Element = document.querySelector('h1');
@@ -165,19 +166,20 @@ app.post("/proxy/template", async (req, res) => {
           }`;
 
           htmlContent = htmlContent.replace(formLogicRegex, newFormLogic);
-          
+
           // Remove form validation and submission logic since there's no form
           htmlContent = htmlContent.replace(
             /document\.addEventListener\('DOMContentLoaded'[^}]*?\}\)\)/s,
-            ''
+            ""
           );
           htmlContent = htmlContent.replace(
             /document\.getElementById\('submitButton'\)\.addEventListener[^}]*?\}\)\)/s,
-            ''
+            ""
           );
         } else {
           // For quizzes WITH retention, also show title in question area on final step
-          const formLogicRegex = /if \(index === questions\.length - 1\) \{[^}]*formContainer\.style\.display = 'block'[^}]*\}/s;
+          const formLogicRegex =
+            /if \(index === questions\.length - 1\) \{[^}]*formContainer\.style\.display = 'block'[^}]*\}/s;
           const newFormLogic = `if (index === questions.length - 1) {
             // Show the title in the question container area (between progress and form)
             const h1Element = document.querySelector('h1');
@@ -196,19 +198,19 @@ app.post("/proxy/template", async (req, res) => {
         // Fix field mapping: The API is swapping title and description
         if (requestBody.messages) {
           const { title, description } = requestBody.messages;
-          
+
           // Fix h1 tag: should use title, not description
           if (title && title !== description) {
             htmlContent = htmlContent.replace(
-              new RegExp(`<h1[^>]*>${description}</h1>`, 'g'),
+              new RegExp(`<h1[^>]*>${description}</h1>`, "g"),
               `<h1>${title}</h1>`
             );
           }
-          
+
           // Fix form question: should use description, not title (if different and form exists)
           if (description && description !== title && !isWithoutRetention) {
             htmlContent = htmlContent.replace(
-              new RegExp(`<div class="question">${title}</div>`, 'g'),
+              new RegExp(`<div class="question">${title}</div>`, "g"),
               `<div class="question">${description}</div>`
             );
           }
@@ -217,10 +219,49 @@ app.post("/proxy/template", async (req, res) => {
         // Keep H1 hidden by default - will be shown only on final step
         // No changes needed to CSS - H1 stays display:none initially
 
+        // Add vertical centering CSS for better layout
+        const centeringCSS = `
+        .quiz-container {
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: flex-start !important;
+          align-items: stretch !important;
+          min-height: 100vh !important;
+          height: auto !important;
+        }
+        .progress-bar-container {
+          position: relative !important;
+          flex-shrink: 0 !important;
+        }
+        .quiz-content-wrapper {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          flex: 1;
+          padding: 20px 0;
+        }`;
+
+        // Insert the centering CSS into the HTML
+        htmlContent = htmlContent.replace(
+          /<\/style><\/head>/,
+          `${centeringCSS}</style></head>`
+        );
+
+        // Wrap only the main content (not progress bar) in centering container
+        htmlContent = htmlContent.replace(
+          /<div class="question-container">/,
+          '<div class="quiz-content-wrapper"><div class="question-container">'
+        );
+        
+        htmlContent = htmlContent.replace(
+          /<a data-av-rewarded="true" id="hidden-link"/,
+          '</div><a data-av-rewarded="true" id="hidden-link"'
+        );
+
         // Fix empty final question: If last question is empty, ensure it has the button text
         if (requestBody.messages && requestBody.messages.button) {
           const buttonText = requestBody.messages.button;
-          
+
           // Find and fix empty final questions
           htmlContent = htmlContent.replace(
             /\{"question":"","options":\[""?\]\}/g,
