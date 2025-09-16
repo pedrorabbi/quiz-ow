@@ -330,13 +330,6 @@ function duplicateQuiz(quizData) {
 }
 
 function deleteQuiz(quizId, index) {
-  // Confirmar antes de excluir
-  const confirmDelete = confirm("Tem certeza que deseja excluir este quiz do histórico?");
-
-  if (!confirmDelete) {
-    return;
-  }
-
   // Carregar histórico atual
   let history = JSON.parse(localStorage.getItem("quizHistory") || "[]");
 

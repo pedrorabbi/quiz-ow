@@ -112,13 +112,13 @@ app.post("/proxy/template", async (req, res) => {
     console.log(data);
     console.log("======================");
 
-    // Parse and fix the response to include isLoading properties
+    // Parse and fix the response to include isLoading properties and handle retention
     try {
       const parsedData = JSON.parse(data);
       if (parsedData.html_array && parsedData.html_array[0]) {
         let htmlContent = parsedData.html_array[0];
 
-        // Find the questions array in the JavaScript
+        // Fix isLoading properties
         const questionsMatch = htmlContent.match(
           /const questions = (\[.*?\]);/s
         );
@@ -140,9 +140,59 @@ app.post("/proxy/template", async (req, res) => {
             /const questions = \[.*?\];/s,
             `const questions = ${updatedQuestionsString};`
           );
-
-          parsedData.html_array[0] = htmlContent;
         }
+
+        // Fix retention: Check if name and email are "-" (no retention)
+        const isWithoutRetention = 
+          requestBody.messages && 
+          requestBody.messages.name === "-" && 
+          requestBody.messages.email === "-";
+
+        if (isWithoutRetention) {
+          // Replace the final quiz logic to not show form and instead add footnote
+          const formLogicRegex = /if \(index === questions\.length - 1\) \{[^}]*formContainer\.style\.display = 'block'[^}]*\}/s;
+          const newFormLogic = `if (index === questions.length - 1) {
+            const footnote = document.createElement('div');
+            footnote.classList.add('footnote');
+            footnote.textContent = adLabel;
+            optionsContainer.appendChild(footnote);
+          }`;
+
+          htmlContent = htmlContent.replace(formLogicRegex, newFormLogic);
+          
+          // Remove form validation and submission logic since there's no form
+          htmlContent = htmlContent.replace(
+            /document\.addEventListener\('DOMContentLoaded'[^}]*?\}\)\)/s,
+            ''
+          );
+          htmlContent = htmlContent.replace(
+            /document\.getElementById\('submitButton'\)\.addEventListener[^}]*?\}\)\)/s,
+            ''
+          );
+        }
+
+        // Fix field mapping: The API is swapping title and description
+        if (requestBody.messages) {
+          const { title, description } = requestBody.messages;
+          
+          // Fix h1 tag: should use title, not description
+          if (title && title !== description) {
+            htmlContent = htmlContent.replace(
+              new RegExp(`<h1[^>]*>${description}</h1>`, 'g'),
+              `<h1>${title}</h1>`
+            );
+          }
+          
+          // Fix form question: should use description, not title (if different and form exists)
+          if (description && description !== title && !isWithoutRetention) {
+            htmlContent = htmlContent.replace(
+              new RegExp(`<div class="question">${title}</div>`, 'g'),
+              `<div class="question">${description}</div>`
+            );
+          }
+        }
+
+        parsedData.html_array[0] = htmlContent;
       }
       res.json(parsedData);
     } catch (error) {
