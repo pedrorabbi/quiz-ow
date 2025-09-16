@@ -149,9 +149,15 @@ app.post("/proxy/template", async (req, res) => {
           requestBody.messages.email === "-";
 
         if (isWithoutRetention) {
-          // Replace the final quiz logic to not show form and instead add footnote
+          // Replace the final quiz logic to not show form and instead add footnote + show title
           const formLogicRegex = /if \(index === questions\.length - 1\) \{[^}]*formContainer\.style\.display = 'block'[^}]*\}/s;
           const newFormLogic = `if (index === questions.length - 1) {
+            // Show the title in the question container area (between progress and button)
+            const h1Element = document.querySelector('h1');
+            h1Element.style.display = 'block';
+            h1Element.style.position = 'relative';
+            h1Element.style.margin = '20px 0';
+            questionContainer.querySelector('.question').appendChild(h1Element);
             const footnote = document.createElement('div');
             footnote.classList.add('footnote');
             footnote.textContent = adLabel;
@@ -169,6 +175,22 @@ app.post("/proxy/template", async (req, res) => {
             /document\.getElementById\('submitButton'\)\.addEventListener[^}]*?\}\)\)/s,
             ''
           );
+        } else {
+          // For quizzes WITH retention, also show title in question area on final step
+          const formLogicRegex = /if \(index === questions\.length - 1\) \{[^}]*formContainer\.style\.display = 'block'[^}]*\}/s;
+          const newFormLogic = `if (index === questions.length - 1) {
+            // Show the title in the question container area (between progress and form)
+            const h1Element = document.querySelector('h1');
+            h1Element.style.display = 'block';
+            h1Element.style.position = 'relative';
+            h1Element.style.margin = '20px 0';
+            questionContainer.querySelector('.question').appendChild(h1Element);
+            formContainer.style.display = 'block'
+            questionContainer.style.display = 'none'
+            optionsContainer.style.display = 'none'
+          }`;
+
+          htmlContent = htmlContent.replace(formLogicRegex, newFormLogic);
         }
 
         // Fix field mapping: The API is swapping title and description
@@ -190,6 +212,20 @@ app.post("/proxy/template", async (req, res) => {
               `<div class="question">${description}</div>`
             );
           }
+        }
+
+        // Keep H1 hidden by default - will be shown only on final step
+        // No changes needed to CSS - H1 stays display:none initially
+
+        // Fix empty final question: If last question is empty, ensure it has the button text
+        if (requestBody.messages && requestBody.messages.button) {
+          const buttonText = requestBody.messages.button;
+          
+          // Find and fix empty final questions
+          htmlContent = htmlContent.replace(
+            /\{"question":"","options":\[""?\]\}/g,
+            `{"question":"","options":["${buttonText}"]}`
+          );
         }
 
         parsedData.html_array[0] = htmlContent;
