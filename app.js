@@ -172,12 +172,21 @@ app.post("/proxy/template", async (req, res) => {
             );
           }
 
-          // Fix form question: should use description, not title (if different and form exists)
-          if (description && description !== title && !isWithoutRetention) {
+          // Fix form question: should use title instead of description for form header
+          if (!isWithoutRetention && title) {
+            // Replace any form question that shows "-" with the actual title
             htmlContent = htmlContent.replace(
-              new RegExp(`<div class="question">${title}</div>`, "g"),
-              `<div class="question">${description}</div>`
+              /<div class="question">-<\/div>/g,
+              `<div class="question">${title}</div>`
             );
+            
+            // Also replace if description is being used instead of title
+            if (description && description !== title) {
+              htmlContent = htmlContent.replace(
+                new RegExp(`<div class="question">${description}</div>`, "g"),
+                `<div class="question">${title}</div>`
+              );
+            }
           }
         }
 
