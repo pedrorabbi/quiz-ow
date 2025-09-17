@@ -2,6 +2,8 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import { Storage } from "@google-cloud/storage";
+import multer from "multer";
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -11,6 +13,34 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 8080;
+
+// Configurar Google Cloud Storage
+const storage = new Storage({
+  projectId: process.env.GOOGLE_CLOUD_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT || "quiz-ow",
+  keyFilename: process.env.GOOGLE_CLOUD_KEY_FILE, // Para desenvolvimento local
+});
+
+// Usar bucket existente do GCS
+const bucketName = process.env.STORAGE_BUCKET || "quiz-ow.appspot.com";
+const bucket = storage.bucket(bucketName);
+
+console.log(`📁 Using Google Cloud Storage bucket: ${bucketName}`);
+
+// Configurar multer para upload de arquivos
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB máximo
+  },
+  fileFilter: (req, file, cb) => {
+    // Apenas imagens
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Apenas imagens são permitidas'), false);
+    }
+  },
+});
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -22,6 +52,151 @@ app.get("/api/config", (req, res) => {
       process.env.ELEGANTQUIZ_API_KEY || "cmbr8lju0000009l85ri155xj",
   });
 });
+
+// Endpoint para upload de imagens
+app.post("/upload/image", upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Nenhuma imagem foi enviada' });
+    }
+
+    // Gerar nome único para o arquivo
+    const timestamp = Date.now();
+    const extension = path.extname(req.file.originalname);
+    const fileName = `quiz-images/${timestamp}${extension}`;
+
+    // Upload para Google Cloud Storage
+    const file = bucket.file(fileName);
+
+    const stream = file.createWriteStream({
+      metadata: {
+        contentType: req.file.mimetype,
+      },
+      public: true, // Tornar o arquivo público
+    });
+
+    return new Promise((resolve, reject) => {
+      stream.on('error', (err) => {
+        console.error('Erro no upload:', err);
+        reject({ error: 'Erro ao fazer upload da imagem' });
+      });
+
+      stream.on('finish', async () => {
+        try {
+          // Tornar o arquivo público
+          await file.makePublic();
+
+          // Gerar URL pública
+          const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
+
+          resolve({
+            success: true,
+            imageUrl: publicUrl,
+            fileName: fileName
+          });
+        } catch (err) {
+          console.error('Erro ao tornar arquivo público:', err);
+          reject({ error: 'Erro ao processar imagem' });
+        }
+      });
+
+      stream.end(req.file.buffer);
+    }).then(result => {
+      res.json(result);
+    }).catch(error => {
+      res.status(500).json(error);
+    });
+
+  } catch (error) {
+    console.error('Erro no endpoint de upload:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Função para inserir imagens nas perguntas do HTML
+function insertQuestionImages(htmlContent, questions) {
+  try {
+    // Extrair o array de questions do JavaScript no HTML
+    const questionsMatch = htmlContent.match(/const questions = (\[.*?\]);/s);
+    if (!questionsMatch) {
+      console.log('Array de questions não encontrado no HTML');
+      return htmlContent;
+    }
+
+    let questionsArray = JSON.parse(questionsMatch[1]);
+
+    // Adicionar URLs de imagem correspondentes
+    questionsArray = questionsArray.map((htmlQuestion, index) => {
+      const originalQuestion = questions[index];
+      if (originalQuestion && originalQuestion.imageUrl) {
+        return {
+          ...htmlQuestion,
+          imageUrl: originalQuestion.imageUrl
+        };
+      }
+      return htmlQuestion;
+    });
+
+    // Substituir o array de questions no HTML
+    const updatedQuestionsString = JSON.stringify(questionsArray, null, 2);
+    htmlContent = htmlContent.replace(
+      /const questions = \[.*?\];/s,
+      `const questions = ${updatedQuestionsString};`
+    );
+
+    // Adicionar CSS para imagens das perguntas
+    const imageCSS = `
+      .question-image {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 8px;
+        margin: 15px auto;
+        display: block;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+    `;
+
+    htmlContent = htmlContent.replace(
+      /<\/style><\/head>/,
+      `${imageCSS}</style></head>`
+    );
+
+    // Modificar a função showQuestion para incluir imagens
+    const showQuestionRegex = /function showQuestion\(index\) \{[^}]*?\}/s;
+    const showQuestionMatch = htmlContent.match(showQuestionRegex);
+
+    if (showQuestionMatch) {
+      let newShowQuestionFunc = showQuestionMatch[0];
+
+      // Adicionar lógica para mostrar imagem após definir o texto da pergunta
+      newShowQuestionFunc = newShowQuestionFunc.replace(
+        /questionContainer\.querySelector\('\.question'\)\.textContent = currentQuestion\.question;/,
+        `questionContainer.querySelector('.question').textContent = currentQuestion.question;
+
+        // Adicionar imagem se existir
+        const existingImage = questionContainer.querySelector('.question-image');
+        if (existingImage) {
+          existingImage.remove();
+        }
+
+        if (currentQuestion.imageUrl) {
+          const img = document.createElement('img');
+          img.src = currentQuestion.imageUrl;
+          img.className = 'question-image';
+          img.alt = 'Imagem da pergunta';
+          questionContainer.querySelector('.question').appendChild(img);
+        }`
+      );
+
+      htmlContent = htmlContent.replace(showQuestionRegex, newShowQuestionFunc);
+    }
+
+    return htmlContent;
+  } catch (error) {
+    console.error('Erro ao inserir imagens nas perguntas:', error);
+    return htmlContent;
+  }
+}
 
 app.post("/proxy/template", async (req, res) => {
   try {
@@ -81,6 +256,11 @@ app.post("/proxy/template", async (req, res) => {
       const parsedData = JSON.parse(data);
       if (parsedData.html_array && parsedData.html_array[0]) {
         let htmlContent = parsedData.html_array[0];
+
+        // Inserir imagens nas perguntas
+        if (requestBody.questions && requestBody.questions.some(q => q.imageUrl)) {
+          htmlContent = insertQuestionImages(htmlContent, requestBody.questions);
+        }
 
         // Fix isLoading properties
         const questionsMatch = htmlContent.match(

@@ -10,6 +10,63 @@ function toEscapedVersion(html) {
     .replace(/\\"/g, '&#34');
 }
 
+// Função para fazer upload de imagem
+async function uploadImage(file, imageInput, imagePreview, previewImg, uploadBtn, uploadText) {
+  try {
+    // Mostrar estado de loading
+    uploadBtn.classList.add("uploading");
+    uploadText.textContent = "Enviando...";
+
+    // Mostrar preview local imediatamente
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewImg.src = e.target.result;
+      imagePreview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+
+    // Fazer upload para o servidor
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const response = await fetch('/upload/image', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      // Armazenar URL da imagem no input como data attribute
+      imageInput.setAttribute('data-image-url', result.imageUrl);
+
+      // Atualizar botão para sucesso
+      uploadBtn.classList.remove("uploading");
+      uploadBtn.classList.add("has-image");
+      uploadText.textContent = file.name;
+    } else {
+      console.error('Erro no upload:', result.error);
+      alert('Erro ao fazer upload da imagem: ' + result.error);
+
+      // Limpar preview e resetar botão em caso de erro
+      imagePreview.style.display = "none";
+      imageInput.value = "";
+      uploadBtn.classList.remove("uploading", "has-image");
+      uploadText.textContent = "Escolher imagem";
+    }
+
+  } catch (error) {
+    console.error('Erro no upload:', error);
+    alert('Erro ao fazer upload da imagem');
+
+    // Limpar preview e resetar botão em caso de erro
+    imagePreview.style.display = "none";
+    imageInput.value = "";
+    uploadBtn.classList.remove("uploading", "has-image");
+    uploadText.textContent = "Escolher imagem";
+  }
+}
+
 async function createHtmlTemplate() {
   // Coleta os valores dos campos do formulário pelo ID
   const vertical = document.getElementById("vertical").value;
@@ -48,8 +105,17 @@ async function createHtmlTemplate() {
       const options = Array.from(optionInputs)
         .map((input) => input.value.trim())
         .filter((option) => option !== ""); // Remove opções vazias
+
+      // Coletar URL da imagem se existir
+      const imageInput = block.querySelector(".image-input");
+      const imageUrl = imageInput ? imageInput.getAttribute('data-image-url') : null;
+
       if (questionText && options.length) {
-        items.push({ type: "question", question: questionText, options });
+        const questionData = { type: "question", question: questionText, options };
+        if (imageUrl) {
+          questionData.imageUrl = imageUrl;
+        }
+        items.push(questionData);
       }
     } else if (block.classList.contains("loader-block")) {
       // É um loader
@@ -63,10 +129,16 @@ async function createHtmlTemplate() {
   // Separar perguntas dos loaders para compatibilidade com a API atual
   const questions = items
     .filter((item) => item.type === "question")
-    .map((item) => ({
-      question: item.question,
-      options: item.options,
-    }));
+    .map((item) => {
+      const questionObj = {
+        question: item.question,
+        options: item.options,
+      };
+      if (item.imageUrl) {
+        questionObj.imageUrl = item.imageUrl;
+      }
+      return questionObj;
+    });
 
   // Separar completamente a lógica baseada no tipo de quiz
   let requestPayload;
@@ -423,6 +495,18 @@ function addQuestion() {
             <input type="text" placeholder=" " class="question-input" />
             <label>Texto da Pergunta</label>
           </div>
+          <div class="image-upload-container">
+            <label class="image-upload-label">Imagem da pergunta (opcional):</label>
+            <input type="file" class="image-input" accept="image/*" />
+            <div class="image-upload-btn">
+              <span class="material-symbols-rounded upload-icon">cloud_upload</span>
+              <span class="upload-text">Escolher imagem</span>
+            </div>
+            <div class="image-preview" style="display: none;">
+              <img class="preview-img" alt="Preview da imagem" />
+              <button type="button" class="remove-image-btn">×</button>
+            </div>
+          </div>
           <div class="options-container">
             <div class="floating-label-group">
               <input type="text" placeholder=" " class="option-input" />
@@ -438,12 +522,47 @@ function addQuestion() {
   container.appendChild(questionDiv);
 
   // Adicionar event listeners aos novos inputs
-  const inputs = questionDiv.querySelectorAll("input");
+  const inputs = questionDiv.querySelectorAll("input:not(.image-input)");
   inputs.forEach((input) => {
     input.addEventListener("input", () => {
       resetPreview();
       updatePreview();
     });
+  });
+
+  // Adicionar event listener para upload de imagem
+  const imageInput = questionDiv.querySelector(".image-input");
+  const imageUploadBtn = questionDiv.querySelector(".image-upload-btn");
+  const uploadText = questionDiv.querySelector(".upload-text");
+  const imagePreview = questionDiv.querySelector(".image-preview");
+  const previewImg = questionDiv.querySelector(".preview-img");
+  const removeBtn = questionDiv.querySelector(".remove-image-btn");
+
+  // Clicar no botão customizado abre o seletor de arquivo
+  imageUploadBtn.addEventListener("click", () => {
+    imageInput.click();
+  });
+
+  imageInput.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      await uploadImage(file, imageInput, imagePreview, previewImg, imageUploadBtn, uploadText);
+      resetPreview();
+      updatePreview();
+    }
+  });
+
+  removeBtn.addEventListener("click", () => {
+    imageInput.value = "";
+    imageInput.removeAttribute("data-image-url");
+    imagePreview.style.display = "none";
+
+    // Resetar botão
+    uploadText.textContent = "Escolher imagem";
+    imageUploadBtn.classList.remove("has-image");
+
+    resetPreview();
+    updatePreview();
   });
 
   // Adicionar eventos de drag and drop
@@ -666,7 +785,8 @@ function updatePreviewQuestions() {
         "Pergunta de exemplo",
         ["Opção 1", "Opção 2"],
         0,
-        2 // 1 pergunta + 1 formulário
+        2, // 1 pergunta + 1 formulário
+        null // sem imagem para exemplo
       );
       questionsContainer.appendChild(questionDiv);
     } else {
@@ -699,6 +819,10 @@ function updatePreviewQuestions() {
             .filter((option) => option.value !== "")
             .map((option) => option.value);
 
+          // Coletar URL da imagem se existir
+          const imageInput = currentBlock.querySelector(".image-input");
+          const imageUrl = imageInput ? imageInput.getAttribute('data-image-url') : null;
+
           // Garantir pelo menos 2 opções para o preview
           const displayOptions =
             options.length > 0 ? options : ["Opção 1", "Opção 2"];
@@ -707,7 +831,8 @@ function updatePreviewQuestions() {
             questionText,
             displayOptions,
             questionIndex,
-            totalSteps
+            totalSteps,
+            imageUrl
           );
           questionsContainer.appendChild(questionDiv);
         } else if (currentBlock.classList.contains("loader-block")) {
@@ -737,7 +862,7 @@ function updatePreviewQuestions() {
 }
 
 // Função para criar uma pergunta no preview
-function createPreviewQuestion(questionText, options, stepIndex, totalSteps) {
+function createPreviewQuestion(questionText, options, stepIndex, totalSteps, imageUrl = null) {
   const questionDiv = document.createElement("div");
   questionDiv.className = "preview-question";
   questionDiv.style.marginBottom = "20px";
@@ -747,6 +872,15 @@ function createPreviewQuestion(questionText, options, stepIndex, totalSteps) {
   questionTitle.style.margin = "0 0 15px 0";
   questionTitle.style.color = "#333";
   questionTitle.style.textAlign = "center";
+
+  // Adicionar imagem se existir
+  if (imageUrl) {
+    const img = document.createElement("img");
+    img.src = imageUrl;
+    img.className = "preview-question-image";
+    img.alt = "Imagem da pergunta";
+    questionDiv.appendChild(img);
+  }
 
   const optionsDiv = document.createElement("div");
   optionsDiv.className = "preview-options";
@@ -1063,11 +1197,20 @@ function saveQuizToHistory() {
         .filter((option) => option !== "");
 
       if (questionText && options.length) {
-        quizData.items.push({
+        const questionData = {
           type: "question",
           question: questionText,
           options: options,
-        });
+        };
+
+        // Incluir URL da imagem se existir
+        const imageInput = block.querySelector(".image-input");
+        const imageUrl = imageInput ? imageInput.getAttribute('data-image-url') : null;
+        if (imageUrl) {
+          questionData.imageUrl = imageUrl;
+        }
+
+        quizData.items.push(questionData);
       }
     } else if (block.classList.contains("loader-block")) {
       // É um loader
@@ -1231,9 +1374,10 @@ function loadQuizHistory() {
         `;
 
         if (item.type === "question") {
+          const hasImage = item.imageUrl ? " 🖼️" : "";
           stepDiv.innerHTML = `
             <div style="font-weight: bold; color: #0ea5e9; margin-bottom: 4px;">
-              📝 Pergunta ${stepIndex + 1}
+              📝 Pergunta ${stepIndex + 1}${hasImage}
             </div>
             <div style="color: #333; margin-bottom: 4px;">${item.question}</div>
             <div style="color: #666; font-size: 11px;">
@@ -1363,6 +1507,23 @@ function duplicateQuiz(quizData) {
       // Preencher texto da pergunta
       const questionInput = lastQuestionBlock.querySelector(".question-input");
       questionInput.value = item.question;
+
+      // Restaurar imagem se existir
+      if (item.imageUrl) {
+        const imageInput = lastQuestionBlock.querySelector(".image-input");
+        const imageUploadBtn = lastQuestionBlock.querySelector(".image-upload-btn");
+        const uploadText = lastQuestionBlock.querySelector(".upload-text");
+        const imagePreview = lastQuestionBlock.querySelector(".image-preview");
+        const previewImg = lastQuestionBlock.querySelector(".preview-img");
+
+        imageInput.setAttribute('data-image-url', item.imageUrl);
+        previewImg.src = item.imageUrl;
+        imagePreview.style.display = "block";
+
+        // Atualizar botão
+        uploadText.textContent = "Imagem carregada";
+        imageUploadBtn.classList.add("has-image");
+      }
 
       // Preencher opções
       const optionInputs = lastQuestionBlock.querySelectorAll(".option-input");
