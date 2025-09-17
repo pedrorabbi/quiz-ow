@@ -210,6 +210,9 @@ app.post("/proxy/template", async (req, res) => {
           justify-content: center;
           flex: 1;
           padding: 20px 0;
+        }
+        .question {
+          margin-bottom: 30px !important;
         }`;
 
         // Insert the centering CSS into the HTML
